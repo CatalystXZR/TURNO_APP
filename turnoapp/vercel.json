@@ -1,4 +1,7 @@
 {
+  "framework": "flutter",
+  "installCommand": "FLUTTER_VERSION=\"3.29.3\" && if [ ! -d \"/tmp/flutter\" ]; then curl -sL https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz | tar xJ -C /tmp; fi && export PATH=\"/tmp/flutter/bin:$PATH\" && flutter config --enable-web --no-analytics",
+  "buildCommand": "export PATH=\"/tmp/flutter/bin:$PATH\" && flutter pub get && flutter build web --release --dart-define=SUPABASE_URL=$SUPABASE_URL --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY",
   "outputDirectory": "build/web",
   "routes": [
     { "handle": "filesystem" },

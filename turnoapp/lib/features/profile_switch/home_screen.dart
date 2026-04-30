@@ -744,7 +744,7 @@ class _RoleSwitchCard extends StatelessWidget {
                   Switch(
                     value: isDriver,
                     onChanged: (_) => onToggle(),
-                    activeThumbColor: highlight,
+                    activeColor: highlight,
                   ),
                   Icon(
                     Icons.drive_eta,

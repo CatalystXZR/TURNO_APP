@@ -29,11 +29,9 @@ workflows:
         working_directory: turnoapp
         script: flutter test
         ignore_failure: true
-      - name: Set up code signing & build IPA
+      - name: Build iOS IPA
         working_directory: turnoapp
         script: |
-          keychain initialize
-          keychain add-certificates
           flutter build ipa --release \
             --dart-define=SUPABASE_URL=$SUPABASE_URL \
             --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY

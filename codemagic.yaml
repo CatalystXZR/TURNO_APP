@@ -33,7 +33,9 @@ workflows:
         working_directory: turnoapp
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files "com.uniride.turnoapp" --create
+          app-store-connect fetch-signing-files "com.uniride.turnoapp" \
+            --certificate-key /tmp/codemagic_distribution_key \
+            --create
           keychain add-certificates
       - name: Build iOS IPA
         working_directory: turnoapp

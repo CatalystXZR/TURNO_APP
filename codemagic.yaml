@@ -32,16 +32,11 @@ workflows:
       - name: Build iOS IPA
         working_directory: turnoapp
         script: |
-          echo "$DISTRIBUTION_P12_BASE64" | base64 -d > /tmp/distribution.p12
           echo "$PROVISIONING_PROFILE_BASE64" | base64 -d > /tmp/distribution.mobileprovision
-          echo "P12 size: $(wc -c < /tmp/distribution.p12) bytes"
-          echo "Profile size: $(wc -c < /tmp/distribution.mobileprovision) bytes"
-          echo "P12 first 10 bytes hex: $(xxd -l 10 /tmp/distribution.p12)"
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
           cp /tmp/distribution.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/distribution.mobileprovision"
           keychain initialize
-          security import /tmp/distribution.p12 -P uniride2026 -A -T /usr/bin/codesign -T /usr/bin/security -T /usr/bin/productbuild
-          security set-key-partition-list -S apple-tool:,apple: -s -k "" "$(security default-keychain | sed 's/"//g')"
+          keychain add-certificates
           flutter build ipa --release \
             --dart-define=SUPABASE_URL=$SUPABASE_URL \
             --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY

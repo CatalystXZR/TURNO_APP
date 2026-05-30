@@ -34,6 +34,9 @@ workflows:
         script: |
           echo "$DISTRIBUTION_P12_BASE64" | base64 -d > /tmp/distribution.p12
           echo "$PROVISIONING_PROFILE_BASE64" | base64 -d > /tmp/distribution.mobileprovision
+          echo "P12 size: $(wc -c < /tmp/distribution.p12) bytes"
+          echo "Profile size: $(wc -c < /tmp/distribution.mobileprovision) bytes"
+          echo "P12 first 10 bytes hex: $(xxd -l 10 /tmp/distribution.p12)"
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
           cp /tmp/distribution.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/distribution.mobileprovision"
           keychain initialize

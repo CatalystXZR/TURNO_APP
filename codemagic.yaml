@@ -1,7 +1,3 @@
-# Codemagic CI/CD Configuration for Turno
-# Docs: https://docs.codemagic.io/yaml/
-# Trigger: push to main, tag v*.*.*
-
 workflows:
   ios-build:
     name: iOS Build & TestFlight
@@ -12,7 +8,7 @@ workflows:
       xcode: latest
       cocoapods: default
       groups:
-        - prod
+        - prod # <-- Aqui Codemagic cargara magicamente tu llave con sus BEGIN y END
     triggering:
       events:
         - push
@@ -22,11 +18,6 @@ workflows:
       tag_patterns:
         - pattern: v*.*.*
           include: true
-    code_signing:
-      app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
     scripts:
       - name: Install dependencies
         working_directory: turnoapp
@@ -38,12 +29,19 @@ workflows:
         working_directory: turnoapp
         script: flutter test
         ignore_failure: true
+      - name: Set up Apple Code Signing
+        working_directory: turnoapp
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "com.uniride.turnoapp" --create
+          keychain add-certificates
       - name: Build iOS IPA
         working_directory: turnoapp
         script: |
           flutter build ipa --release \
             --dart-define=SUPABASE_URL=$SUPABASE_URL \
-            --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
+            --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY \
+            --export-options-plist=$HOME/export_options.plist
     artifacts:
       - turnoapp/build/ios/ipa/*.ipa
     publishing:

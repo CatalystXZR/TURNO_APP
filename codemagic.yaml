@@ -35,9 +35,10 @@ workflows:
           echo "$DISTRIBUTION_P12_BASE64" | base64 -d > /tmp/distribution.p12
           echo "$PROVISIONING_PROFILE_BASE64" | base64 -d > /tmp/distribution.mobileprovision
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          cp /tmp/distribution.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/"
-          security import /tmp/distribution.p12 -k ~/Library/Keychains/login.keychain-db -P uniride2026 -A -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" ~/Library/Keychains/login.keychain-db
+          cp /tmp/distribution.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/distribution.mobileprovision"
+          keychain initialize
+          security import /tmp/distribution.p12 -P uniride2026 -A -T /usr/bin/codesign -T /usr/bin/security -T /usr/bin/productbuild
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" "$(security default-keychain | sed 's/"//g')"
           flutter build ipa --release \
             --dart-define=SUPABASE_URL=$SUPABASE_URL \
             --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY

@@ -32,22 +32,8 @@ workflows:
       - name: Set up Apple Code Signing
         working_directory: turnoapp
         script: |
-          printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" | tr -d '\r' > /tmp/app-store-connect-key.p8
-          echo "=== KEY DEBUG ==="
-          echo "Size: $(wc -c < /tmp/app-store-connect-key.p8) bytes"
-          echo "Line count: $(wc -l < /tmp/app-store-connect-key.p8)"
-          echo "First line: $(head -1 /tmp/app-store-connect-key.p8)"
-          echo "Last line: $(tail -1 /tmp/app-store-connect-key.p8)"
-          echo "Hidden chars in line 1:"
-          head -1 /tmp/app-store-connect-key.p8 | cat -A
-          echo "Hidden chars in body (first 50):"
-          sed -n '2p' /tmp/app-store-connect-key.p8 | head -c 50 | cat -A
-          echo ""
-          echo "================"
           keychain initialize
-          app-store-connect fetch-signing-files "com.uniride.turnoapp" \
-            --private-key /tmp/app-store-connect-key.p8 \
-            --create
+          app-store-connect fetch-signing-files "com.uniride.turnoapp" --create
           keychain add-certificates
       - name: Build iOS IPA
         working_directory: turnoapp

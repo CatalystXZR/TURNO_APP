@@ -34,17 +34,21 @@ workflows:
         script: |
           keychain initialize
           
-          # 1. Decodifica tu llave de App Store Connect (.p8)
+          # 1. Decodificamos tu variable Base64 web para revivir el archivo fisico .p8 con saltos de linea perfectos
           echo "$APP_STORE_CONNECT_PRIVATE_KEY" | base64 --decode > "$HOME/private_key.p8"
           
-          # 2. Descarga los perfiles oficiales usando la llave fisica
-          app-store-connect fetch-signing-files "com.uniride.turnoapp" --create --private-key="$HOME/private_key.p8"
+          # 2. Le pasamos el CONTENIDO del archivo usando $(cat ...) en vez de la ruta del archivo
+          app-store-connect fetch-signing-files "com.uniride.turnoapp" --create --private-key="$(cat $HOME/private_key.p8)"
           
-          # 3. CREA EL ARCHIVO FISICO .P12 en el disco de la Mac usando tu variable de la web
+          # 3. Decodificamos tu certificado .p12 generado en Fedora con -legacy
           echo "$CM_CERTIFICATE" | base64 --decode > "$HOME/distribution.p12"
           
-          # 4. Fuerza la instalacion manual del certificado apuntando al archivo y su contrasena
-          keychain add-certificates --certificates "$HOME/distribution.p12" --password "$CM_CERTIFICATE_PASSWORD"
+          # 4. Copiamos el archivo .p12 a la carpeta interna donde el comando keychain busca certificados por defecto de forma automatica
+          mkdir -p "$HOME/Library/MobileDevice/Certificates"
+          cp "$HOME/distribution.p12" "$HOME/Library/MobileDevice/Certificates/distribution.p12"
+          
+          # 5. Ejecutamos el comando limpio de Codemagic para abrir el llavero sin argumentos invalidos
+          keychain add-certificates
       - name: Build iOS IPA
         working_directory: turnoapp
         script: |

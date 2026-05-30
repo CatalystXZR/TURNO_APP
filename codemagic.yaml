@@ -33,7 +33,6 @@ workflows:
         working_directory: turnoapp
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files "com.uniride.turnoapp" --create
           keychain add-certificates
           flutter build ipa --release \
             --dart-define=SUPABASE_URL=$SUPABASE_URL \

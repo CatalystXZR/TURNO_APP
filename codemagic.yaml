@@ -29,16 +29,17 @@ workflows:
         working_directory: turnoapp
         script: flutter test
         ignore_failure: true
+      - name: Set up Apple Code Signing
+        working_directory: turnoapp
+        script: |
+          keychain initialize
+          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > "$HOME/private_key.p8"
+          app-store-connect fetch-signing-files "com.uniride.turnoapp" --create --private-key="$HOME/private_key.p8"
+          echo "$CM_CERTIFICATE" | base64 -d > "$HOME/distribution.p12"
+          keychain add-certificates --certificates "$HOME/distribution.p12" --password "$CM_CERTIFICATE_PASSWORD"
       - name: Build iOS IPA
         working_directory: turnoapp
         script: |
-          echo "$CM_CERTIFICATE" | base64 -d > /tmp/distribution.p12
-          echo "$PROVISIONING_PROFILE_BASE64" | base64 -d > /tmp/distribution.mobileprovision
-          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          cp /tmp/distribution.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/distribution.mobileprovision"
-          keychain initialize
-          security import /tmp/distribution.p12 -P "$CM_CERTIFICATE_PASSWORD" -A -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" "$(security default-keychain | sed 's/"//g')"
           flutter build ipa --release \
             --dart-define=SUPABASE_URL=$SUPABASE_URL \
             --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY

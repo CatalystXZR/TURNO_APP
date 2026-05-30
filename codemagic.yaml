@@ -1,14 +1,14 @@
 workflows:
   ios-build:
-    name: iOS Build & TestFlight
+    name: Build iOS IPA & TestFlight
+    max_build_duration: 60
     instance_type: mac_mini_m1
-    max_build_duration: 45
     environment:
+      groups:
+        - prod
       flutter: stable
       xcode: latest
       cocoapods: default
-      groups:
-        - prod
     triggering:
       events:
         - push
@@ -33,20 +33,9 @@ workflows:
         working_directory: turnoapp
         script: |
           keychain initialize
-          
-          # 1. Decodifica tu .p8 sin corromperlo usando printf
-          printf "%s" "$APP_STORE_CONNECT_PRIVATE_KEY" | base64 --decode > "$HOME/private_key.p8"
-          
-          # 2. Descarga los perfiles de Apple de forma oficial
-          app-store-connect fetch-signing-files "com.uniride.turnoapp" --create --private-key="$HOME/private_key.p8"
-          
-          # 3. Crea la carpeta oficial de certificados de la Mac
+          app-store-connect fetch-signing-files "com.uniride.turnoapp" --create
           mkdir -p "$HOME/Library/MobileDevice/Certificates"
-          
-          # 4. Decodifica tu verdadero .p12 (el que uniste en Fedora) directo a la carpeta de escaneo
           printf "%s" "$CM_CERTIFICATE" | base64 --decode > "$HOME/Library/MobileDevice/Certificates/distribution.p12"
-          
-          # 5. Instala el certificado en el llavero de forma nativa
           keychain add-certificates
       - name: Build iOS IPA
         working_directory: turnoapp

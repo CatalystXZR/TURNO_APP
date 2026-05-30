@@ -11,12 +11,8 @@ workflows:
       flutter: 3.29.x
       xcode: 16.x
       cocoapods: default
-      vars:
-        SUPABASE_URL: $SUPABASE_URL
-        SUPABASE_ANON_KEY: $SUPABASE_ANON_KEY
-        APP_STORE_CONNECT_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY
-        APP_STORE_CONNECT_KEY_IDENTIFIER: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        APP_STORE_CONNECT_ISSUER_ID: $APP_STORE_CONNECT_ISSUER_ID
+      groups:
+        - prod # <-- Aqui Codemagic cargara de forma segura tus 5 variables guardadas en la web
     triggering:
       events:
         - push

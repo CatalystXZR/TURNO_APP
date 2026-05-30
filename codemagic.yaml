@@ -8,7 +8,7 @@ workflows:
       xcode: latest
       cocoapods: default
       groups:
-        - prod # <-- Aqui Codemagic cargara magicamente tu llave con sus BEGIN y END
+        - prod
     triggering:
       events:
         - push
@@ -32,14 +32,21 @@ workflows:
       - name: Set up Apple Code Signing
         working_directory: turnoapp
         script: |
-          printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/app-store-connect-key.p8
-          echo "Key file size: $(wc -c < /tmp/app-store-connect-key.p8) bytes"
-          head -1 /tmp/app-store-connect-key.p8
+          printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" | tr -d '\r' > /tmp/app-store-connect-key.p8
+          echo "=== KEY DEBUG ==="
+          echo "Size: $(wc -c < /tmp/app-store-connect-key.p8) bytes"
+          echo "Line count: $(wc -l < /tmp/app-store-connect-key.p8)"
+          echo "First line: $(head -1 /tmp/app-store-connect-key.p8)"
+          echo "Last line: $(tail -1 /tmp/app-store-connect-key.p8)"
+          echo "Hidden chars in line 1:"
+          head -1 /tmp/app-store-connect-key.p8 | cat -A
+          echo "Hidden chars in body (first 50):"
+          sed -n '2p' /tmp/app-store-connect-key.p8 | head -c 50 | cat -A
+          echo ""
+          echo "================"
           keychain initialize
           app-store-connect fetch-signing-files "com.uniride.turnoapp" \
             --private-key /tmp/app-store-connect-key.p8 \
-            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
-            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
             --create
           keychain add-certificates
       - name: Build iOS IPA
@@ -47,8 +54,7 @@ workflows:
         script: |
           flutter build ipa --release \
             --dart-define=SUPABASE_URL=$SUPABASE_URL \
-            --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY \
-            --export-options-plist=$HOME/export_options.plist
+            --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
     artifacts:
       - turnoapp/build/ios/ipa/*.ipa
     publishing:

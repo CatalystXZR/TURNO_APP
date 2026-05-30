@@ -18,6 +18,11 @@ workflows:
       tag_patterns:
         - pattern: v*.*.*
           include: true
+    code_signing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
     scripts:
       - name: Install dependencies
         working_directory: turnoapp
@@ -29,14 +34,6 @@ workflows:
         working_directory: turnoapp
         script: flutter test
         ignore_failure: true
-      - name: Set up Apple Code Signing
-        working_directory: turnoapp
-        script: |
-          keychain initialize
-          app-store-connect fetch-signing-files "com.uniride.turnoapp" \
-            --certificate-key /tmp/codemagic_distribution_key \
-            --create
-          keychain add-certificates
       - name: Build iOS IPA
         working_directory: turnoapp
         script: |

@@ -32,8 +32,13 @@ workflows:
       - name: Set up Apple Code Signing
         working_directory: turnoapp
         script: |
+          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/app-store-connect-key.p8
           keychain initialize
-          app-store-connect fetch-signing-files "com.uniride.turnoapp" --create
+          app-store-connect fetch-signing-files "com.uniride.turnoapp" \
+            --private-key /tmp/app-store-connect-key.p8 \
+            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
+            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            --create
           keychain add-certificates
       - name: Build iOS IPA
         working_directory: turnoapp

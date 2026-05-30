@@ -115,8 +115,6 @@ class Booking {
           return BookingDispatchStatus.reserved;
         case 'accepted':
           return BookingDispatchStatus.accepted;
-        case 'accepted':
-          return BookingDispatchStatus.accepted;
         case 'driver_arriving':
           return BookingDispatchStatus.driverArriving;
         case 'driver_arrived':

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/theme.dart';
-import '../../core/constants.dart';
 import '../../shared/widgets/decorative_background.dart';
 import '../../services/legal_service.dart';
 

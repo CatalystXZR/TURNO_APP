@@ -34,9 +34,6 @@ Future<void> main() async {
     (options) {
       options.dsn = const String.fromEnvironment('SENTRY_DSN');
       options.tracesSampleRate = 0.5;
-      options.profilesSampleRate = 0.5;
-      options.attachScreenshot = false;
-      options.attachViewHierarchy = true;
     },
     appRunner: () async {
       try {

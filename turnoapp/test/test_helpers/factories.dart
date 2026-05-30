@@ -1,7 +1,5 @@
 import 'dart:math';
 
-const _testUuid = '00000000-0000-4000-a000-000000000';
-
 String _uuid(int seed) =>
     '00000000-0000-4000-a000-${seed.toString().padLeft(12, '0')}';
 

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/theme.dart';
-import '../../core/error_mapper.dart';
 import '../../models/enums.dart';
 import '../../providers/favorites_provider.dart';
 import '../../services/favorites_service.dart';

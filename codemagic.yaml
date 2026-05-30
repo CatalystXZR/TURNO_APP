@@ -51,7 +51,3 @@ workflows:
         submit_to_testflight: true
         beta_groups:
           - Testers Internos
-    notifications:
-      email:
-        recipients:
-          - $NOTIFICATION_EMAIL

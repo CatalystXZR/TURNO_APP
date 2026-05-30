@@ -34,15 +34,17 @@ workflows:
         script: |
           keychain initialize
           
-          # Convierte \n literales a saltos de linea reales y escribe el .p8
-          echo -e "$APP_STORE_CONNECT_PRIVATE_KEY" > "$HOME/private_key.p8"
-          head -1 "$HOME/private_key.p8"
+          # 1. Decodifica tu llave de App Store Connect (.p8)
+          echo "$APP_STORE_CONNECT_PRIVATE_KEY" | base64 --decode > "$HOME/private_key.p8"
           
-          # Descarga perfiles
+          # 2. Descarga los perfiles oficiales usando la llave fisica
           app-store-connect fetch-signing-files "com.uniride.turnoapp" --create --private-key="$HOME/private_key.p8"
           
-          # Instala certificado
-          keychain add-certificates
+          # 3. CREA EL ARCHIVO FISICO .P12 en el disco de la Mac usando tu variable de la web
+          echo "$CM_CERTIFICATE" | base64 --decode > "$HOME/distribution.p12"
+          
+          # 4. Fuerza la instalacion manual del certificado apuntando al archivo y su contrasena
+          keychain add-certificates --certificates "$HOME/distribution.p12" --password "$CM_CERTIFICATE_PASSWORD"
       - name: Build iOS IPA
         working_directory: turnoapp
         script: |

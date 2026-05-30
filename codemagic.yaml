@@ -34,25 +34,17 @@ workflows:
         script: |
           keychain initialize
           
-          # 1. Decodifica tu llave de App Store Connect (.p8)
-          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > "$HOME/private_key.p8"
+          # 1. Descarga el perfil usando las variables de la web de forma nativa
+          app-store-connect fetch-signing-files "com.uniride.turnoapp" --create
           
-          # 2. Deja que Codemagic descargue el perfil oficial de TestFlight
-          app-store-connect fetch-signing-files "com.uniride.turnoapp" --create --private-key="$HOME/private_key.p8"
-          
-          # 3. Decodifica tu certificado .p12 generado en Fedora con -legacy
-          echo "$CM_CERTIFICATE" | base64 --decode > "$HOME/distribution.p12"
-          
-          # 4. Deja que Codemagic instale y configure los permisos de firmado correctamente
-          keychain add-certificates --certificates "$HOME/distribution.p12" --password "$CM_CERTIFICATE_PASSWORD"
+          # 2. Instala tu certificado .p12 (el que generaste con -legacy) automaticamente
+          keychain add-certificates
       - name: Build iOS IPA
         working_directory: turnoapp
         script: |
-          # 5. Compilamos el IPA indicandole a Xcode que use la firma automatica de Codemagic
           flutter build ipa --release \
             --dart-define=SUPABASE_URL=$SUPABASE_URL \
-            --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY \
-            --export-options-plist=$HOME/export_options.plist
+            --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
     artifacts:
       - turnoapp/build/ios/ipa/*.ipa
     publishing:

@@ -97,3 +97,4 @@ yarn-error.log*
 key.properties
 google-services.json
 GoogleService-Info.plist
+certs/

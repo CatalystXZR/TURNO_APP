@@ -8,11 +8,11 @@ workflows:
     instance_type: mac_mini_m1
     max_build_duration: 45
     environment:
-      flutter: stable # <--- Cambiado de 3.29.x a stable
+      flutter: stable
       xcode: latest
       cocoapods: default
       groups:
-        - prod # <-- Aqui Codemagic cargara de forma segura tus 5 variables guardadas en la web
+        - prod
     triggering:
       events:
         - push
@@ -22,6 +22,11 @@ workflows:
       tag_patterns:
         - pattern: v*.*.*
           include: true
+    code_signing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
     scripts:
       - name: Install dependencies
         working_directory: turnoapp
@@ -33,19 +38,12 @@ workflows:
         working_directory: turnoapp
         script: flutter test
         ignore_failure: true
-      - name: Set up Apple Code Signing
-        working_directory: turnoapp
-        script: |
-          keychain initialize
-          app-store-connect fetch-signing-files "com.uniride.turnoapp" --create
-          keychain add-certificates
       - name: Build iOS IPA
         working_directory: turnoapp
         script: |
           flutter build ipa --release \
             --dart-define=SUPABASE_URL=$SUPABASE_URL \
-            --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY \
-            --export-options-plist=$HOME/export_options.plist
+            --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
     artifacts:
       - turnoapp/build/ios/ipa/*.ipa
     publishing:

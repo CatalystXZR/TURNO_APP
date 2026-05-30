@@ -34,10 +34,13 @@ workflows:
         script: |
           keychain initialize
           
-          # 1. Descarga el perfil usando las variables de la web de forma nativa
-          app-store-connect fetch-signing-files "com.uniride.turnoapp" --create
+          # 1. Decodificamos tu variable Base64 para crear el archivo fisico .p8 con sus saltos de linea perfectos
+          echo "$APP_STORE_CONNECT_PRIVATE_KEY" | base64 -d > "$HOME/private_key.p8"
           
-          # 2. Instala tu certificado .p12 (el que generaste con -legacy) automaticamente
+          # 2. Le pasamos la ruta del archivo temporal al comando oficial de Codemagic
+          app-store-connect fetch-signing-files "com.uniride.turnoapp" --create --private-key="$HOME/private_key.p8"
+          
+          # 3. Codemagic tomara tu CM_CERTIFICATE y CM_CERTIFICATE_PASSWORD de la web automaticamente
           keychain add-certificates
       - name: Build iOS IPA
         working_directory: turnoapp

@@ -8,7 +8,7 @@ workflows:
     instance_type: mac_mini_m1
     max_build_duration: 45
     environment:
-      flutter: 3.29.x
+      flutter: stable # <--- Cambiado de 3.29.x a stable
       xcode: latest
       cocoapods: default
       groups:

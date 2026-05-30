@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -92,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       const SizedBox(height: 12),
                       Text(
-                        'TurnoApp',
+                        'Turno',
                         textAlign: TextAlign.center,
                         style: Theme.of(context)
                             .textTheme

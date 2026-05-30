@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -108,7 +108,13 @@ class Booking {
     }
 
     BookingDispatchStatus parseDispatchStatus(String s) {
-      switch (s) {
+      final normalized =
+          s.trim().toLowerCase().replaceAll('"', '').replaceAll("'", '');
+      switch (normalized) {
+        case 'reserved':
+          return BookingDispatchStatus.reserved;
+        case 'accepted':
+          return BookingDispatchStatus.accepted;
         case 'accepted':
           return BookingDispatchStatus.accepted;
         case 'driver_arriving':
@@ -128,7 +134,7 @@ class Booking {
         default:
           // ignore: avoid_print
           print(
-              '⚠ dispatch_status desconocido desde API: "$s", usando reserved');
+              '⚠ dispatch_status desconocido desde API: "$s" (normalized: "$normalized"), usando reserved');
           return BookingDispatchStatus.reserved;
       }
     }

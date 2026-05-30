@@ -19,7 +19,7 @@ import UserNotifications
         }
       }
       if let error = error {
-        print("[TurnoApp] Notification permission error: \(error.localizedDescription)")
+        print("[Turno] Notification permission error: \(error.localizedDescription)")
       }
     }
 
@@ -38,7 +38,7 @@ import UserNotifications
   ) {
     let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
     let token = tokenParts.joined()
-    print("[TurnoApp] APNs device token: \(token)")
+    print("[Turno] APNs device token: \(token)")
 
     if let controller = window?.rootViewController as? FlutterViewController {
       let channel = FlutterMethodChannel(
@@ -53,7 +53,7 @@ import UserNotifications
     _ application: UIApplication,
     didFailToRegisterForRemoteNotificationsWithError error: Error
   ) {
-    print("[TurnoApp] Failed to register for APNs: \(error.localizedDescription)")
+    print("[Turno] Failed to register for APNs: \(error.localizedDescription)")
   }
 
   override func userNotificationCenter(

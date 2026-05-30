@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustin Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -12,7 +12,7 @@
  *
  */
 
-/// App-wide constants for TurnoApp MVP.
+/// App-wide constants for Turno MVP.
 class AppConstants {
   AppConstants._();
 
@@ -33,10 +33,10 @@ class AppConstants {
   ];
 
   // Legal and operations
-  static const String termsVersion = 'v1.1-legal-strikes';
+  static const String termsVersion = 'v2.0-legal-full';
   static const String privacyPolicyVersion = 'v1.0';
   static const String privacyPolicyLastUpdated = '2026-04-19';
-  static const String supportEmail = 'soporte@turnoapp.app';
+  static const String supportEmail = 'turnoappchile@gmail.com';
   static const String supportResponseWindow = '24-48 horas habiles';
   static const int waitTimeMinutesNoShow = 10;
   static const int lateCancellationHours = 2;
@@ -53,7 +53,7 @@ class AppConstants {
     'Buin',
   ];
 
-  // Universities
+  // Universidades
   static const List<Map<String, String>> universities = [
     {'code': 'UDD', 'name': 'Universidad del Desarrollo'},
     {'code': 'UANDES', 'name': 'Universidad de los Andes'},
@@ -89,7 +89,7 @@ class AppConstants {
     return requestedAmount + topupFeeForAmount(requestedAmount);
   }
 
-  // Fallback reference data with fixed UUIDs from seed migration.
+
   static const List<Map<String, String>> universitiesWithIds = [
     {
       'id': '11111111-0000-0000-0000-000000000001',

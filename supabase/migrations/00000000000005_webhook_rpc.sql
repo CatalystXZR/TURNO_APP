@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp MVP — Migration 05: Webhook RPC
+-- Turno MVP — Migration 05: Webhook RPC
 -- credit_wallet_topup — called exclusively by the Mercado Pago
 -- webhook Edge Function using the service_role key.
 -- Atomically: records the payment, credits the wallet, writes ledger.

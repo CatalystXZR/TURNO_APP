@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustin Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp — Migration 25: Simplify campuses, drop carrocería,
+-- Turno — Migration 25: Simplify campuses, drop carrocería,
 -- fix pricing (passenger pays 2190 = 2000+190), narrower overlap
 -- =============================================================
 

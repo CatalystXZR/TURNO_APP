@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *

@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp MVP — Migration 01: Row Level Security
+-- Turno MVP — Migration 01: Row Level Security
 -- =============================================================
 
 -- Enable RLS on every sensitive table

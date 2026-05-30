@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustin Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp — Migration 19: Pricing 2190/2000 + Double Booking Guard
+-- Turno — Migration 19: Pricing 2190/2000 + Double Booking Guard
 -- =============================================================
 
 -- ----------

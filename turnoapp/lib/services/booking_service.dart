@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -12,8 +12,10 @@
  *
  */
 
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../core/retry_config.dart';
 import '../core/supabase_client.dart';
 import '../models/booking.dart';
 
@@ -57,6 +59,31 @@ class BookingService {
     return error.toString();
   }
 
+  Future<T> _retryRpc<T>(
+    String fn, {
+    Map<String, dynamic>? params,
+  }) {
+    return RetryConfig.withRetry(
+      () async {
+        final result = await _client.rpc(fn, params: params);
+        return result as T;
+      },
+      isRetryable: (e) => RetryConfig.isNetworkError(e),
+    );
+  }
+
+  Future<void> _retryRpcVoid(
+    String fn, {
+    Map<String, dynamic>? params,
+  }) {
+    return RetryConfig.withRetry(
+      () async {
+        await _client.rpc(fn, params: params);
+      },
+      isRetryable: (e) => RetryConfig.isNetworkError(e),
+    );
+  }
+
   Future<String> createBooking(String rideId) async {
     try {
       final uuidValid = _isValidUuid(rideId);
@@ -64,11 +91,11 @@ class BookingService {
         throw Exception('ID de ride invalido');
       }
 
-      final result = await _client.rpc('create_booking', params: {
+      final result = await _retryRpc<String>('create_booking', params: {
         'p_ride_id': rideId,
       });
 
-      return result as String;
+      return result;
     } on PostgrestException catch (e) {
       throw Exception(_mapPostgresError(e));
     } catch (e) {
@@ -84,62 +111,62 @@ class BookingService {
   }
 
   Future<void> confirmBoarding(String bookingId) async {
-    await _client.rpc('confirm_boarding', params: {
+    await _retryRpcVoid('confirm_boarding', params: {
       'p_booking_id': bookingId,
     });
   }
 
   Future<void> driverAcceptBooking(String bookingId) async {
-    await _client.rpc('driver_accept_booking', params: {
+    await _retryRpcVoid('driver_accept_booking', params: {
       'p_booking_id': bookingId,
     });
   }
 
   Future<void> driverRejectBooking(String bookingId, {String? reason}) async {
-    await _client.rpc('driver_reject_booking', params: {
+    await _retryRpcVoid('driver_reject_booking', params: {
       'p_booking_id': bookingId,
       'p_reason': reason,
     });
   }
 
   Future<void> driverMarkArriving(String bookingId) async {
-    await _client.rpc('driver_mark_arriving', params: {
+    await _retryRpcVoid('driver_mark_arriving', params: {
       'p_booking_id': bookingId,
     });
   }
 
   Future<void> driverMarkArrived(String bookingId) async {
-    await _client.rpc('driver_mark_arrived', params: {
+    await _retryRpcVoid('driver_mark_arrived', params: {
       'p_booking_id': bookingId,
     });
   }
 
   Future<void> driverStartTrip(String bookingId) async {
-    await _client.rpc('driver_start_trip', params: {
+    await _retryRpcVoid('driver_start_trip', params: {
       'p_booking_id': bookingId,
     });
   }
 
   Future<void> driverCompleteTrip(String bookingId) async {
-    await _client.rpc('driver_complete_trip', params: {
+    await _retryRpcVoid('driver_complete_trip', params: {
       'p_booking_id': bookingId,
     });
   }
 
   Future<void> driverCompleteRide(String rideId) async {
-    await _client.rpc('complete_ride_manual', params: {
+    await _retryRpcVoid('complete_ride_manual', params: {
       'p_ride_id': rideId,
     });
   }
 
   Future<void> cancelBooking(String bookingId) async {
-    await _client.rpc('cancel_booking', params: {
+    await _retryRpcVoid('cancel_booking', params: {
       'p_booking_id': bookingId,
     });
   }
 
   Future<void> reportDriverNoShow(String bookingId, {String? notes}) async {
-    await _client.rpc('passenger_report_no_show', params: {
+    await _retryRpcVoid('passenger_report_no_show', params: {
       'p_booking_id': bookingId,
       'p_notes': notes,
     });
@@ -210,6 +237,35 @@ class BookingService {
   Future<List<Booking>> getBookingsForMyRides({int limit = 100}) async {
     final uid = _client.auth.currentUser!.id;
 
+    try {
+      final rows = await _client
+          .from('bookings')
+          .select('''
+          *,
+          rides!ride_id(origin_commune, departure_at,
+            driver_id,
+            universities!university_id(name),
+            campuses!campus_id(name)
+          ),
+          users_profile!passenger_id(
+            full_name,
+            rating_avg,
+            rating_count,
+            profile_photo_url,
+            vehicle_plate,
+            vehicle_model
+          )
+        ''')
+          .eq('driver_id', uid)
+          .order('created_at', ascending: false)
+          .limit(limit);
+
+      return _mapBookingsWithRideAndPassenger(rows);
+    } on PostgrestException catch (e) {
+      debugPrint(
+          '[Turno] BookingService: direct query failed (driver_id col may not exist), using fallback: $e');
+    }
+
     final rideRows =
         await _client.from('rides').select('id').eq('driver_id', uid);
 
@@ -239,6 +295,10 @@ class BookingService {
         .order('created_at', ascending: false)
         .limit(limit);
 
+    return _mapBookingsWithRideAndPassenger(rows);
+  }
+
+  List<Booking> _mapBookingsWithRideAndPassenger(List<dynamic> rows) {
     return rows.map((row) {
       final flat = Map<String, dynamic>.from(row);
       final ride = row['rides'] as Map?;

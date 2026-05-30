@@ -5,6 +5,7 @@ import '../services/booking_service.dart';
 import '../services/favorites_service.dart';
 import '../services/profile_service.dart';
 import '../services/reference_data_service.dart';
+import '../services/report_service.dart';
 import '../services/review_service.dart';
 import '../services/ride_service.dart';
 import '../services/wallet_service.dart';
@@ -29,3 +30,4 @@ final favoritesServiceProvider = Provider<FavoritesService>(
 final referenceDataServiceProvider = Provider<ReferenceDataService>(
   (ref) => ReferenceDataService(),
 );
+final reportServiceProvider = Provider<ReportService>((ref) => ReportService());

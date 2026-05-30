@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -31,7 +29,6 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
   bool _busy = false;
   String? _busyMessage;
   bool _isFavoriteDriver = false;
-  Timer? _pollTimer;
   bool _navigatedToArrival = false;
 
   Future<void> _runBusy(
@@ -61,14 +58,8 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _startPolling();
+      _refresh();
     });
-  }
-
-  @override
-  void dispose() {
-    _pollTimer?.cancel();
-    super.dispose();
   }
 
   Booking? _bookingFromState(MyRidesState state) {
@@ -79,21 +70,11 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
     }
   }
 
-  void _startPolling() {
-    _pollTimer?.cancel();
-    _refresh();
-    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (!mounted) return;
-      _refresh();
-    });
-  }
-
   Future<void> _checkArrival(Booking booking) async {
     if (_navigatedToArrival) return;
     if (booking.isCompleted &&
         booking.dispatchStatus == BookingDispatchStatus.completed) {
       _navigatedToArrival = true;
-      _pollTimer?.cancel();
       if (!mounted) return;
       await Future.delayed(const Duration(milliseconds: 500));
       if (!mounted) return;
@@ -269,6 +250,11 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
         ),
       );
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _checkArrival(booking);
+    });
 
     const flowOrder = <BookingDispatchStatus>[
       BookingDispatchStatus.reserved,

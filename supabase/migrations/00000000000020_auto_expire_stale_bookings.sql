@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustin Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp — Migration 20: Auto-expire stale bookings + timezone safety
+-- Turno — Migration 20: Auto-expire stale bookings + timezone safety
 -- =============================================================
 
 -- 1) Auto-close bookings where passenger never boarded after departure + 15 min

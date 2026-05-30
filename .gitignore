@@ -1,5 +1,5 @@
 # =============================================================
-# TurnoApp — .gitignore
+# Turno — .gitignore
 # Covers: Flutter/Dart, Supabase (Deno/TS), Node/npm, OS files
 # =============================================================
 
@@ -11,12 +11,22 @@
 .env.staging
 # Keep .env.example (safe template, no real values)
 
+# Apple credentials
+APPLECREDS.md
+
 # Supabase local secrets
 supabase/.env
 supabase/functions/**/.env
 
 # ── Flutter / Dart ────────────────────────────────────────────
-# Build outputs
+# Build outputs (legacy dir)
+turno/build/
+turno/.dart_tool/
+turno/.flutter-plugins
+turno/.flutter-plugins-dependencies
+turno/.packages
+
+# Build outputs (current dir)
 turnoapp/build/
 turnoapp/.dart_tool/
 turnoapp/.flutter-plugins
@@ -24,18 +34,18 @@ turnoapp/.flutter-plugins-dependencies
 turnoapp/.packages
 
 # Generated files
-turnoapp/**/*.g.dart
-turnoapp/**/*.freezed.dart
-turnoapp/**/*.mocks.dart
+turno/**/*.g.dart
+turno/**/*.freezed.dart
+turno/**/*.mocks.dart
 
 # Platform-specific generated code
-turnoapp/android/
-turnoapp/linux/
-turnoapp/macos/
-turnoapp/windows/
+turno/android/
+turno/linux/
+turno/macos/
+turno/windows/
 
 # Pub cache & lock (keep pubspec.lock for reproducible builds)
-# turnoapp/pubspec.lock  ← intentionally NOT ignored
+# turno/pubspec.lock  ← intentionally NOT ignored
 
 # ── Supabase ──────────────────────────────────────────────────
 # Local dev state

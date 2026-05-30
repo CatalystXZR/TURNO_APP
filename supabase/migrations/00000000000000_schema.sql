@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp MVP — Migration 00: Schema
+-- Turno MVP — Migration 00: Schema
 -- Extensions, enums, tables, foreign keys, indexes
 -- =============================================================
 

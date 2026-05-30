@@ -1,23 +1,7 @@
-/**
- *
- * Project: TurnoApp
- *
- * Original Concept: Agustin Puelma, Cristobal Cordova, Carlos Ibarra
- *
- * Software Architecture & Code: Matias Toledo (catalystxzr)
- *
- * Description: Production-grade implementation for UDD carpooling system.
- *
- * Copyright (c) 2026. All rights reserved.
- *
- */
-
 // supabase/functions/create-topup-intent/index.ts
 //
-// Provider-agnostic topup intent creator.
-// Current providers:
-// - mercadopago (active flow)
-// - stripe (stub response to keep API ready)
+// Creates a Fintoc Checkout Session for wallet top-up.
+// Returns redirect_url so the user can pay on Fintoc's hosted page.
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -25,18 +9,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const APP_BASE_URL = Deno.env.get("APP_BASE_URL") ?? "https://turnoapp.cl";
 
-const SUPPORTED_PAYMENT_PROVIDERS = new Set(["mercadopago", "stripe", "disabled"]);
-const PAYMENT_PROVIDER_RAW = (Deno.env.get("PAYMENT_PROVIDER") ?? "mercadopago").toLowerCase();
-const PAYMENT_PROVIDER = SUPPORTED_PAYMENT_PROVIDERS.has(PAYMENT_PROVIDER_RAW)
-  ? PAYMENT_PROVIDER_RAW
-  : "mercadopago";
-
-// Mercado Pago config
-const MP_ACCESS_TOKEN = Deno.env.get("MP_ACCESS_TOKEN") ?? "";
-const MP_WEBHOOK_URL = `${SUPABASE_URL}/functions/v1/mercadopago-webhook`;
-
-// Stripe config placeholders (for future connection)
-const STRIPE_PUBLISHABLE_KEY = Deno.env.get("STRIPE_PUBLISHABLE_KEY") ?? "";
+const FINTOC_SECRET_KEY = Deno.env.get("FINTOC_SECRET_KEY") ?? "";
+const FINTOC_API_BASE = "https://api.fintoc.com/v2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -75,10 +49,6 @@ function logInfo(event: string, details: Record<string, unknown> = {}) {
   console.log(JSON.stringify({ level: "info", event, ...details }));
 }
 
-function logWarn(event: string, details: Record<string, unknown> = {}) {
-  console.warn(JSON.stringify({ level: "warn", event, ...details }));
-}
-
 function logError(event: string, details: Record<string, unknown> = {}) {
   console.error(JSON.stringify({ level: "error", event, ...details }));
 }
@@ -103,111 +73,57 @@ async function getAuthedUser(authHeader: string | null) {
   return user;
 }
 
-async function createMercadoPagoIntent(params: {
+async function createFintocCheckout(params: {
   amountRequested: number;
   amountCharged: number;
   userId: string;
   userEmail?: string;
-}) {
+}): Promise<{ checkout_session_id: string; redirect_url: string }> {
   const { amountRequested, amountCharged, userId, userEmail } = params;
 
-  if (!MP_ACCESS_TOKEN) {
-    throw new Error("mp_access_token_missing");
+  if (!FINTOC_SECRET_KEY) {
+    throw new Error("fintoc_secret_key_missing");
   }
 
-  const externalRef = `turnoapp_topup_${userId}_${Date.now()}_${amountRequested}_${amountCharged}`;
-
-  const payer = userEmail?.trim()
-    ? { email: userEmail.trim() }
-    : undefined;
-
-  const mpBody = {
-    items: [
-      {
-        id: "wallet_topup",
-        title: "Recarga billetera TurnoApp",
-        description: `Recarga neta $${amountRequested.toLocaleString("es-CL")} CLP + 1% fee`,
-        quantity: 1,
-        currency_id: "CLP",
-        unit_price: amountCharged,
-      },
-    ],
-    payer,
-    external_reference: externalRef,
-    back_urls: {
-      success: `${APP_BASE_URL}/wallet?topup=success`,
-      failure: `${APP_BASE_URL}/wallet?topup=failure`,
-      pending: `${APP_BASE_URL}/wallet?topup=pending`,
+  const body: Record<string, unknown> = {
+    amount: amountCharged,
+    currency: "CLP",
+    success_url: `${APP_BASE_URL}/wallet?topup=success`,
+    cancel_url: `${APP_BASE_URL}/wallet?topup=failure`,
+    metadata: {
+      user_id: userId,
+      amount_requested: amountRequested,
     },
-    auto_return: "approved",
-    notification_url: MP_WEBHOOK_URL,
-    statement_descriptor: "TURNOAPP",
-    expires: false,
   };
 
-  const mpRes = await fetch("https://api.mercadopago.com/checkout/preferences", {
+  if (userEmail?.trim()) {
+    body.customer_email = userEmail.trim();
+  }
+
+  const res = await fetch(`${FINTOC_API_BASE}/checkout_sessions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${MP_ACCESS_TOKEN}`,
+      "Authorization": FINTOC_SECRET_KEY,
     },
-    body: JSON.stringify(mpBody),
+    body: JSON.stringify(body),
   });
 
-  if (!mpRes.ok) {
-    const response = await mpRes.text();
-    logError("mp_preference_create_failed", {
-      user_id: userId,
+  if (!res.ok) {
+    const responseText = await res.text();
+    logError("fintoc_checkout_create_failed", {
+      status: res.status,
+      response: responseText,
       amount_requested: amountRequested,
       amount_charged: amountCharged,
-      status: mpRes.status,
-      response,
     });
     throw new Error("payment_provider_error");
   }
 
-  const mpData = await mpRes.json();
+  const data = await res.json();
   return {
-    provider: "mercadopago",
-    init_point: mpData.init_point,
-    sandbox_init_point: mpData.sandbox_init_point,
-    preference_id: mpData.id,
-    external_reference: externalRef,
-  };
-}
-
-function createStripeStub(params: {
-  amountRequested: number;
-  amountCharged: number;
-  userId: string;
-}) {
-  const { amountRequested, amountCharged, userId } = params;
-  const externalRef = `turnoapp_topup_${userId}_${Date.now()}_${amountRequested}_${amountCharged}`;
-
-  return {
-    provider: "stripe",
-    status: "provider_not_connected",
-    message: "Stripe endpoint listo. Falta conectar secret key y webhook de produccion.",
-    external_reference: externalRef,
-    stripe_publishable_key_present: STRIPE_PUBLISHABLE_KEY.length > 0,
-    amount_requested: amountRequested,
-    fee_amount: topupFee(amountRequested),
-    amount_charged: amountCharged,
-  };
-}
-
-function createDisabledResponse(params: {
-  amountRequested: number;
-  amountCharged: number;
-}) {
-  const { amountRequested, amountCharged } = params;
-  return {
-    provider: "disabled",
-    status: "disabled",
-    message: "Recargas temporalmente deshabilitadas hasta configurar credenciales del proveedor.",
-    amount_requested: amountRequested,
-    fee_amount: topupFee(amountRequested),
-    amount_charged: amountCharged,
+    checkout_session_id: data.id as string,
+    redirect_url: data.redirect_url as string,
   };
 }
 
@@ -244,39 +160,27 @@ serve(async (req) => {
     const feeAmount = topupFee(amountRequested);
     const amountCharged = topupChargedAmount(amountRequested);
 
-    if (PAYMENT_PROVIDER !== PAYMENT_PROVIDER_RAW) {
-      logWarn("payment_provider_invalid_fallback", {
-        configured_provider: PAYMENT_PROVIDER_RAW,
-        selected_provider: PAYMENT_PROVIDER,
+    const provider = (Deno.env.get("PAYMENT_PROVIDER") ?? "fintoc").toLowerCase();
+    if (provider === "disabled") {
+      return jsonResponse({
+        provider: "disabled",
+        status: "disabled",
+        message: "Recargas temporalmente deshabilitadas.",
+        amount_requested: amountRequested,
+        fee_amount: feeAmount,
+        amount_charged: amountCharged,
       });
     }
 
     logInfo("topup_intent_requested", {
       user_id: user.id,
-      provider: PAYMENT_PROVIDER,
+      provider: "fintoc",
       amount_requested: amountRequested,
       fee_amount: feeAmount,
       amount_charged: amountCharged,
     });
 
-    if (PAYMENT_PROVIDER === "stripe") {
-      const stripeStub = createStripeStub({
-        amountRequested,
-        amountCharged,
-        userId: user.id,
-      });
-      return jsonResponse(stripeStub, 200);
-    }
-
-    if (PAYMENT_PROVIDER === "disabled") {
-      const disabledResponse = createDisabledResponse({
-        amountRequested,
-        amountCharged,
-      });
-      return jsonResponse(disabledResponse, 200);
-    }
-
-    const mpIntent = await createMercadoPagoIntent({
+    const fintocResult = await createFintocCheckout({
       amountRequested,
       amountCharged,
       userId: user.id,
@@ -284,7 +188,9 @@ serve(async (req) => {
     });
 
     return jsonResponse({
-      ...mpIntent,
+      provider: "fintoc",
+      checkout_session_id: fintocResult.checkout_session_id,
+      redirect_url: fintocResult.redirect_url,
       amount_requested: amountRequested,
       fee_amount: feeAmount,
       amount_charged: amountCharged,

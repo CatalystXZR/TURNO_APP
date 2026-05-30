@@ -1,5 +1,5 @@
 /**
- * TurnoApp — Migration 22: Hardening close gaps (sandbox, delete account, fix complete_ride_manual)
+ * Turno — Migration 22: Hardening close gaps (sandbox, delete account, fix complete_ride_manual)
  * Sandbox-only release. All functions idempotent with CREATE OR REPLACE.
  */
 

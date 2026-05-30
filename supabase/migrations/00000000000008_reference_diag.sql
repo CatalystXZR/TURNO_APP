@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustin Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp MVP — Migration 08: Reference access diagnostics
+-- Turno MVP — Migration 08: Reference access diagnostics
 --
 -- Adds lightweight diagnostics to quickly verify that
 -- universities/campuses are queryable from anon/authenticated clients.

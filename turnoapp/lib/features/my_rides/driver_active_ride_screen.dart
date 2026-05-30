@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -36,7 +34,6 @@ class _DriverActiveRideScreenState
   bool _busy = false;
   String? _busyMessage;
   Set<String> _favoritePassengerIds = <String>{};
-  Timer? _pollTimer;
   bool _navigatedToArrival = false;
 
   Future<void> _runBusy(
@@ -66,21 +63,6 @@ class _DriverActiveRideScreenState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _startPolling();
-    });
-  }
-
-  @override
-  void dispose() {
-    _pollTimer?.cancel();
-    super.dispose();
-  }
-
-  void _startPolling() {
-    _pollTimer?.cancel();
-    _refresh();
-    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (!mounted) return;
       _refresh();
     });
   }
@@ -132,7 +114,6 @@ class _DriverActiveRideScreenState
     final ride = _rideFromState(state);
     if (ride != null && ride.status == 'completed') {
       _navigatedToArrival = true;
-      _pollTimer?.cancel();
       if (!mounted) return;
       context.go('/arrival');
     }
@@ -438,6 +419,11 @@ class _DriverActiveRideScreenState
       );
     }
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _checkArrival();
+    });
+
     final int acceptedCount = bookings
         .where((b) =>
             b.isReserved && b.dispatchStatus != BookingDispatchStatus.reserved)
@@ -531,14 +517,22 @@ class _DriverActiveRideScreenState
                             b.dispatchStatus ==
                                 BookingDispatchStatus.passengerBoarded)
                         .toList();
+                    int succeeded = 0;
                     for (final b in activeBookings) {
                       try {
                         await ref
                             .read(driverRidesProvider.notifier)
                             .startTrip(b.id);
-                      } catch (_) {}
+                        succeeded++;
+                      } catch (e) {
+                        debugPrint(
+                            '[Turno] DriverActive: startTrip failed for ${b.id}: $e');
+                      }
                     }
-                    AppSnackbar.show(context, 'Viaje iniciado para todos.');
+                    AppSnackbar.show(
+                      context,
+                      'Viaje iniciado: $succeeded/${activeBookings.length} pasajeros.',
+                    );
                     _refresh();
                   },
                 ),

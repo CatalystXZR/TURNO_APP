@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustin Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -74,13 +74,31 @@ serve(async (req) => {
       reason,
     });
 
-    const { error: deleteErr } = await supabaseAdmin.auth.admin.deleteUser(user.id, true);
-    if (deleteErr) {
-      logError("account_delete_failed", {
+    // Call the delete_user_account RPC with the user's UUID explicitly.
+    // We use the service_role client (supabaseAdmin) for this call to bypass
+    // RLS. The RPC accepts p_user_id and handles the full cleanup including
+    // temporarily dropping the transactions immutability rules.
+    const { error: rpcErr } = await supabaseAdmin.rpc("delete_user_account", {
+      p_user_id: user.id,
+      p_reason: reason || null,
+    });
+
+    if (rpcErr) {
+      logError("delete_user_account_rpc_failed", {
         user_id: user.id,
-        error: deleteErr.message,
+        error: rpcErr.message,
       });
-      return jsonResponse({ error: "delete_failed" }, 500);
+
+      // Fallback: attempt direct auth deletion (may still fail on FK constraints
+      // if the RPC didn't clean up child tables first).
+      const { error: deleteErr } = await supabaseAdmin.auth.admin.deleteUser(user.id, true);
+      if (deleteErr) {
+        logError("account_delete_failed", {
+          user_id: user.id,
+          error: deleteErr.message,
+        });
+        return jsonResponse({ error: "delete_failed" }, 500);
+      }
     }
 
     logInfo("account_deleted", { user_id: user.id });

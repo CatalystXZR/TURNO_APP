@@ -85,7 +85,7 @@ class PushNotificationService {
         'created_at': DateTime.now().toUtc().toIso8601String(),
       }, onConflict: 'user_id, token');
     } catch (e) {
-      debugPrint('[TurnoApp] Error registering push token: $e');
+      debugPrint('[Turno] Error registering push token: $e');
     }
   }
 }

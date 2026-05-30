@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp MVP — Migration 03: Auth Trigger
+-- Turno MVP — Migration 03: Auth Trigger
 -- Automatically creates users_profile + wallets rows whenever
 -- a new user signs up via Supabase Auth.
 -- This removes the manual upsert calls from register_screen.dart

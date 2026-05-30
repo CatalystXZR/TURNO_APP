@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Description: Edge Function that sends APNs push notifications
  *              to iOS devices via Apple's HTTP/2 API.
@@ -58,8 +58,7 @@ const APNS_TEAM_ID = Deno.env.get("APNS_TEAM_ID") ?? "";
 const APNS_BUNDLE_ID = Deno.env.get("APNS_BUNDLE_ID") ?? "com.turnoapp.app";
 const APNS_KEY_BASE64 = Deno.env.get("APNS_KEY_BASE64") ?? "";
 
-const INTERNAL_SECRET = Deno.env.get("INTERNAL_PUSH_SECRET") ??
-  "turnoapp-internal-push-call-v1";
+const INTERNAL_SECRET = Deno.env.get("INTERNAL_PUSH_SECRET") ?? "";
 
 const APNS_BASE_URL = "https://api.push.apple.com";
 const APNS_ENDPOINT = (token: string) => `/3/device/${token}`;
@@ -189,6 +188,11 @@ serve(async (req) => {
   }
 
   try {
+    if (!INTERNAL_SECRET) {
+      logError("push_notification_secret_not_configured");
+      return jsonResponse({ error: "service_not_configured" }, 503);
+    }
+
     const internalSecret = req.headers.get("X-Internal-Secret");
     if (internalSecret !== INTERNAL_SECRET) {
       return jsonResponse({ error: "unauthorized" }, 401);

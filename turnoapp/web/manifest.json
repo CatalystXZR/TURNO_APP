@@ -1,6 +1,6 @@
 {
-  "name": "TurnoApp",
-  "short_name": "TurnoApp",
+  "name": "Turno",
+  "short_name": "Turno",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#F8F9FA",

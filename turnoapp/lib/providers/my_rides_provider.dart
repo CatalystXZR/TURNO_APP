@@ -1,29 +1,44 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../core/supabase_client.dart';
+import '../models/app_notification.dart';
 import '../models/booking.dart';
 import '../services/booking_notification_service.dart';
 import 'in_app_notification_provider.dart';
+import 'lifecycle_provider.dart';
 import 'service_providers.dart';
 
 class MyRidesState {
   final List<Booking> bookings;
   final bool loading;
+  final DateTime lastFetchedAt;
 
-  const MyRidesState({this.bookings = const [], this.loading = true});
+  MyRidesState({
+    this.bookings = const [],
+    this.loading = true,
+    DateTime? lastFetchedAt,
+  }) : lastFetchedAt = lastFetchedAt ?? DateTime(2000);
 
-  MyRidesState copyWith({List<Booking>? bookings, bool? loading}) {
+  MyRidesState copyWith({
+    List<Booking>? bookings,
+    bool? loading,
+    DateTime? lastFetchedAt,
+  }) {
     return MyRidesState(
       bookings: bookings ?? this.bookings,
       loading: loading ?? this.loading,
+      lastFetchedAt: lastFetchedAt ?? this.lastFetchedAt,
     );
   }
 }
 
 class MyRidesNotifier extends StateNotifier<MyRidesState> {
-  MyRidesNotifier(this._ref) : super(const MyRidesState()) {
-    BookingNotificationService.instance.setInAppNotifyCallback((notif) {
+  MyRidesNotifier(this._ref) : super(MyRidesState()) {
+    _inAppCallback = (notif) {
       _ref.read(inAppNotificationProvider.notifier).add(
             title: notif.title,
             body: notif.body,
@@ -31,27 +46,124 @@ class MyRidesNotifier extends StateNotifier<MyRidesState> {
             rideId: notif.rideId,
             notifId: notif.id.hashCode,
           );
-    });
+    };
+    BookingNotificationService.instance
+        .addInAppNotifyCallback(_inAppCallback);
+
+    _ref.listen<AppLifecycleState>(
+      lifecycleStateProvider,
+      _onLifecycleChange,
+    );
+
     load();
-    _pollTimer = Timer.periodic(_pollInterval, (_) => _poll());
+    _startRealtime();
+    _startFallbackTimer();
   }
 
   final Ref _ref;
-  Timer? _pollTimer;
+  RealtimeChannel? _bookingsChannel;
+  Timer? _fallbackTimer;
+  Timer? _refreshDebounceTimer;
+  late final void Function(AppNotification) _inAppCallback;
 
-  static const _pollInterval = Duration(seconds: 5);
+  static const _fallbackInterval = Duration(seconds: 45);
+  static const _realtimeDebounce = Duration(milliseconds: 600);
 
   bool _loading = false;
+  int _generation = 0;
+  bool _scheduledLazyRefresh = false;
 
   @override
   void dispose() {
-    _pollTimer?.cancel();
+    _fallbackTimer?.cancel();
+    _refreshDebounceTimer?.cancel();
+    final channel = _bookingsChannel;
+    _bookingsChannel = null;
+    if (channel != null) {
+      SupabaseConfig.client.removeChannel(channel);
+    }
+    BookingNotificationService.instance
+        .removeInAppNotifyCallback(_inAppCallback);
     super.dispose();
   }
 
+  void _onLifecycleChange(AppLifecycleState? prev, AppLifecycleState next) {
+    if (prev == next) return;
+
+    if (next == AppLifecycleState.paused ||
+        next == AppLifecycleState.detached) {
+      _fallbackTimer?.cancel();
+      final channel = _bookingsChannel;
+      _bookingsChannel = null;
+      if (channel != null) {
+        _subscriptionCleanup(() async {
+          await SupabaseConfig.client.removeChannel(channel);
+        });
+      }
+    } else if (next == AppLifecycleState.resumed) {
+      if (_bookingsChannel == null) {
+        _startRealtime();
+      }
+      _startFallbackTimer();
+      _scheduleLazyRefresh();
+    }
+  }
+
+  void _startRealtime() {
+    final uid = SupabaseConfig.client.auth.currentUser?.id;
+    if (uid == null || uid.isEmpty) return;
+
+    final channel = SupabaseConfig.client.channel('bookings-passenger-$uid');
+    channel.onPostgresChanges(
+      event: PostgresChangeEvent.all,
+      schema: 'public',
+      table: 'bookings',
+      filter: PostgresChangeFilter(
+        type: PostgresChangeFilterType.eq,
+        column: 'passenger_id',
+        value: uid,
+      ),
+      callback: (_) => _scheduleRealtimeRefresh(),
+    );
+    try {
+      channel.subscribe();
+    } catch (e) {
+      debugPrint('[Turno] MyRides: realtime subscribe failed: $e');
+    }
+    _bookingsChannel = channel;
+  }
+
+  void _startFallbackTimer() {
+    _fallbackTimer?.cancel();
+    _fallbackTimer =
+        Timer.periodic(_fallbackInterval, (_) => _refreshSilently());
+  }
+
+  void _subscriptionCleanup(Future<void> Function() action) {
+    action().catchError((_) {});
+  }
+
+  void _scheduleLazyRefresh() {
+    if (_scheduledLazyRefresh) return;
+    _scheduledLazyRefresh = true;
+    Future.delayed(const Duration(milliseconds: 200), () {
+      _scheduledLazyRefresh = false;
+      if (mounted) _refreshSilently();
+    });
+  }
+
+  void _scheduleRealtimeRefresh() {
+    _refreshDebounceTimer?.cancel();
+    _refreshDebounceTimer = Timer(_realtimeDebounce, _refreshSilently);
+  }
+
   Future<void> load() async {
-    if (_loading) return;
+    if (_loading) {
+      _pendingLoad = true;
+      return;
+    }
     _loading = true;
+    _pendingLoad = false;
     state = state.copyWith(loading: true);
     try {
       final service = _ref.read(bookingServiceProvider);
@@ -59,26 +171,44 @@ class MyRidesNotifier extends StateNotifier<MyRidesState> {
           await service.getMyBookings().timeout(const Duration(seconds: 15));
       await BookingNotificationService.instance.syncPassengerBookings(rows);
       if (!mounted) return;
-      state = state.copyWith(bookings: rows, loading: false);
+      _generation++;
+      state = state.copyWith(
+        bookings: rows,
+        loading: false,
+        lastFetchedAt: DateTime.now(),
+      );
     } finally {
       _loading = false;
+      if (_pendingLoad) {
+        _pendingLoad = false;
+        if (mounted) load();
+      }
     }
   }
 
-  Future<void> _poll() async {
+  bool _pendingLoad = false;
+
+  Future<void> _refreshSilently() async {
     if (_loading) return;
     _loading = true;
+    final gen = _generation;
     try {
       final service = _ref.read(bookingServiceProvider);
       final rows = await service.getMyBookings();
       await BookingNotificationService.instance.syncPassengerBookings(rows);
       if (!mounted) return;
-      state = state.copyWith(bookings: rows, loading: false);
+      if (gen < _generation) return;
+      _generation = gen + 1;
+      state = state.copyWith(
+        bookings: rows,
+        loading: false,
+        lastFetchedAt: DateTime.now(),
+      );
     } catch (e) {
-      // ignore: avoid_print
-      print('MyRidesNotifier._poll error silenciado: $e');
       if (!mounted) return;
-      state = state.copyWith(loading: false);
+      if (state.loading) {
+        state = state.copyWith(loading: false);
+      }
     } finally {
       _loading = false;
     }

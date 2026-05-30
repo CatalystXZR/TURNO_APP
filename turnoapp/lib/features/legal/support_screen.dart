@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/theme.dart';
@@ -19,7 +20,7 @@ class SupportScreen extends StatelessWidget {
       scheme: 'mailto',
       path: AppConstants.supportEmail,
       queryParameters: {
-        'subject': 'Soporte TurnoApp',
+        'subject': 'Soporte Turno',
       },
     );
 
@@ -78,7 +79,7 @@ class SupportScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Centro de soporte TurnoApp',
+                      'Centro de soporte Turno',
                       style: Theme.of(context)
                           .textTheme
                           .titleMedium
@@ -135,6 +136,40 @@ class SupportScreen extends StatelessWidget {
                     Text('2) Si aplica, comparte ID de reserva o turno.'),
                     SizedBox(height: 4),
                     Text('3) Describe lo que esperabas vs. lo que ocurrio.'),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Card(
+              color: const Color(0xFFFFF3F6),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Gestion de cuenta',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Si deseas eliminar tu cuenta y todos tus datos asociados, puedes hacerlo desde la seccion de privacidad y cuenta de tu perfil.',
+                      style: TextStyle(
+                        color: AppTheme.subtle,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    OutlinedButton.icon(
+                      onPressed: () => context.push('/profile/edit'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.danger,
+                        side: const BorderSide(color: AppTheme.danger),
+                      ),
+                      icon: const Icon(Icons.delete_forever_outlined),
+                      label: const Text('Eliminar mi cuenta'),
+                    ),
                   ],
                 ),
               ),

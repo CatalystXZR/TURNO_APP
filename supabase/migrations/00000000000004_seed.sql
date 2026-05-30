@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp MVP — Migration 04: Seed Data
+-- Turno MVP — Migration 04: Seed Data
 -- Universities and their campuses for the 6 target institutions.
 -- Uses fixed UUIDs so re-running this migration is idempotent.
 -- =============================================================

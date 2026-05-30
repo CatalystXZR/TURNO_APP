@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -15,6 +15,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'core/supabase_client.dart';
 import 'app/app.dart';
 import 'app/theme.dart';
@@ -29,17 +30,28 @@ Future<void> main() async {
   // Initialize Spanish locale data for DateFormat('...', 'es') calls throughout the app.
   await initializeDateFormatting('es', null);
 
-  try {
-    SupabaseConfig.ensureConfigured();
-    await SupabaseConfig.initialize();
-    await NotificationService.instance.initialize();
-    await PushNotificationService.instance.initialize();
-  } catch (_) {
-    runApp(const _ConfigurationErrorApp());
-    return;
-  }
+  await SentryFlutter.init(
+    (options) {
+      options.dsn = const String.fromEnvironment('SENTRY_DSN');
+      options.tracesSampleRate = 0.5;
+      options.profilesSampleRate = 0.5;
+      options.attachScreenshot = false;
+      options.attachViewHierarchy = true;
+    },
+    appRunner: () async {
+      try {
+        SupabaseConfig.ensureConfigured();
+        await SupabaseConfig.initialize();
+        await NotificationService.instance.initialize();
+        await PushNotificationService.instance.initialize();
+      } catch (_) {
+        runApp(const _ConfigurationErrorApp());
+        return;
+      }
 
-  runApp(const ProviderScope(child: TurnoApp()));
+      runApp(const ProviderScope(child: Turno()));
+    },
+  );
 }
 
 class _ConfigurationErrorApp extends StatelessWidget {

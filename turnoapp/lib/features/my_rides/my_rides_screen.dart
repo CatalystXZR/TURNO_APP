@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustin Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -24,10 +24,12 @@ import '../../models/booking.dart';
 import '../../models/enums.dart';
 import '../../providers/my_rides_provider.dart';
 import '../../services/favorites_service.dart';
+import '../../services/report_service.dart';
 import '../../services/review_service.dart';
 import '../../shared/widgets/app_snackbar.dart';
 import '../../shared/widgets/decorative_background.dart';
 import '../../shared/widgets/loading_overlay.dart';
+import '../../shared/widgets/report_user_dialog.dart';
 import '../../shared/widgets/review_dialog.dart';
 
 class MyRidesScreen extends ConsumerStatefulWidget {
@@ -41,6 +43,7 @@ class _MyRidesScreenState extends ConsumerState<MyRidesScreen>
     with SingleTickerProviderStateMixin {
   final _reviewService = ReviewService();
   final _favoritesService = FavoritesService();
+  final _reportService = ReportService();
   late TabController _tabController;
   bool _busy = false;
   String? _busyMessage;
@@ -347,6 +350,67 @@ class _MyRidesScreenState extends ConsumerState<MyRidesScreen>
     });
   }
 
+  Future<void> _reportDriver(Booking booking) async {
+    final driverId = booking.driverId;
+    if (driverId == null) return;
+
+    await showDialog<bool>(
+      context: context,
+      builder: (_) => ReportUserDialog(
+        reportedUserId: driverId,
+        reportedUserName: booking.driverName ?? 'Conductor',
+        bookingId: booking.id,
+      ),
+    );
+  }
+
+  Future<void> _blockDriver(Booking booking) async {
+    final driverId = booking.driverId;
+    if (driverId == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Bloquear conductor'),
+        content: Text(
+          'Al bloquear a ${booking.driverName ?? 'este conductor'}, no podran interactuar entre si.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.danger,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Bloquear'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    await _runBusy('Bloqueando...', () async {
+      try {
+        await _reportService.blockUser(driverId);
+        if (!mounted) return;
+        AppSnackbar.show(context, 'Conductor bloqueado.');
+        _load();
+      } catch (e) {
+        if (!mounted) return;
+        AppSnackbar.show(
+          context,
+          'No pudimos bloquear al conductor.',
+          isError: true,
+        );
+      }
+    });
+  }
+
   Future<void> _reviewDriver(Booking booking) async {
     await _runBusy('Publicando resena...', () async {
       try {
@@ -438,6 +502,8 @@ class _MyRidesScreenState extends ConsumerState<MyRidesScreen>
                                 isFavoriteDriver: _favoriteDriverIds
                                     .contains(active[i].driverId),
                                 onReviewDriver: _reviewDriver,
+                                onReportDriver: _reportDriver,
+                                onBlockDriver: _blockDriver,
                               ),
                             ),
                       history.isEmpty
@@ -453,6 +519,8 @@ class _MyRidesScreenState extends ConsumerState<MyRidesScreen>
                                 isFavoriteDriver: _favoriteDriverIds
                                     .contains(history[i].driverId),
                                 onReviewDriver: _reviewDriver,
+                                onReportDriver: _reportDriver,
+                                onBlockDriver: _blockDriver,
                               ),
                             ),
                     ],
@@ -473,6 +541,8 @@ class _BookingCard extends StatelessWidget {
   final void Function(Booking)? onFavoriteDriver;
   final bool isFavoriteDriver;
   final void Function(Booking)? onReviewDriver;
+  final void Function(Booking)? onReportDriver;
+  final void Function(Booking)? onBlockDriver;
 
   const _BookingCard({
     required this.booking,
@@ -483,6 +553,8 @@ class _BookingCard extends StatelessWidget {
     this.onFavoriteDriver,
     required this.isFavoriteDriver,
     this.onReviewDriver,
+    this.onReportDriver,
+    this.onBlockDriver,
   });
 
   @override
@@ -710,6 +782,49 @@ class _BookingCard extends StatelessWidget {
                   ),
                   label: const Text('Conductor no llego (no-show)'),
                 ),
+              ),
+            ],
+            if (booking.driverId != null &&
+                (onReportDriver != null || onBlockDriver != null)) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  if (onReportDriver != null) ...[
+                    Expanded(
+                      child: SizedBox(
+                        height: 36,
+                        child: OutlinedButton.icon(
+                          onPressed: () => onReportDriver!(booking),
+                          icon: const Icon(Icons.flag_outlined, size: 14),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppTheme.warning,
+                            side: const BorderSide(color: AppTheme.warning),
+                            textStyle: const TextStyle(fontSize: 11),
+                          ),
+                          label: const Text('Reportar'),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                  ],
+                  if (onBlockDriver != null) ...[
+                    Expanded(
+                      child: SizedBox(
+                        height: 36,
+                        child: OutlinedButton.icon(
+                          onPressed: () => onBlockDriver!(booking),
+                          icon: const Icon(Icons.block_outlined, size: 14),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppTheme.danger,
+                            side: const BorderSide(color: AppTheme.danger),
+                            textStyle: const TextStyle(fontSize: 11),
+                          ),
+                          label: const Text('Bloquear'),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ],
           ],

@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustin Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp MVP — Migration 11: Driver vehicle registration data
+-- Turno MVP — Migration 11: Driver vehicle registration data
 -- =============================================================
 
 alter table users_profile

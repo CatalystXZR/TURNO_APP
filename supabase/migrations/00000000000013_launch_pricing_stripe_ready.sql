@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustin Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp Launch — Migration 13: fixed fee pricing + Stripe-ready topups
+-- Turno Launch — Migration 13: fixed fee pricing + Stripe-ready topups
 -- =============================================================
 
 -- ----------

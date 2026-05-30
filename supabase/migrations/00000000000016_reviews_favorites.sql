@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustin Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp — Migration 16: Public reviews + favorites
+-- Turno — Migration 16: Public reviews + favorites
 -- =============================================================
 
 -- ----------

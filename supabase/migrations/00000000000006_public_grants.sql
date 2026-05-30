@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp MVP — Migration 06: Public read access for reference tables
+-- Turno MVP — Migration 06: Public read access for reference tables
 -- =============================================================
 --
 -- universities and campuses are reference/seed data that must be

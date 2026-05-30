@@ -14,12 +14,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/theme.dart';
 import '../../core/constants.dart';
 import '../../core/error_mapper.dart';
 import '../../models/transaction.dart';
+import '../../providers/home_provider.dart';
 import '../../providers/wallet_provider.dart';
 import '../../shared/widgets/app_snackbar.dart';
 import '../../shared/widgets/decorative_background.dart';
@@ -36,6 +38,8 @@ class _WalletScreenState extends ConsumerState<WalletScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _fadeController;
   late final Animation<double> _fadeAnimation;
+  bool _operationInProgress = false;
+  bool _shouldPopAfterWithdrawal = false;
 
   @override
   void initState() {
@@ -74,6 +78,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen>
   }
 
   Future<void> _startTopup() async {
+    if (_operationInProgress) return;
     final selected = await showModalBottomSheet<int>(
       context: context,
       builder: (ctx) => Padding(
@@ -122,6 +127,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen>
 
     if (selected == null || !mounted) return;
 
+    _operationInProgress = true;
     try {
       await ref.read(walletProvider.notifier).sandboxTopup(selected);
       if (!mounted) return;
@@ -136,10 +142,13 @@ class _WalletScreenState extends ConsumerState<WalletScreen>
         ),
         isError: true,
       );
+    } finally {
+      _operationInProgress = false;
     }
   }
 
   Future<void> _requestWithdrawal() async {
+    if (_operationInProgress) return;
     final balance = ref.read(walletProvider).wallet?.balanceAvailable ?? 0;
     if (balance < AppConstants.minWithdrawalCLP) {
       AppSnackbar.show(
@@ -219,10 +228,14 @@ class _WalletScreenState extends ConsumerState<WalletScreen>
     final amount = int.tryParse(amountController.text.trim()) ?? 0;
     amountController.dispose();
 
+    if (amount <= 0 || amount > balance) return;
+
+    _operationInProgress = true;
     try {
       await ref.read(walletProvider.notifier).sandboxWithdraw(amount);
       if (!mounted) return;
       AppSnackbar.show(context, 'Retiro realizado con exito');
+      _shouldPopAfterWithdrawal = true;
     } catch (e) {
       if (!mounted) return;
       AppSnackbar.show(
@@ -233,6 +246,8 @@ class _WalletScreenState extends ConsumerState<WalletScreen>
         ),
         isError: true,
       );
+    } finally {
+      _operationInProgress = false;
     }
   }
 
@@ -243,6 +258,18 @@ class _WalletScreenState extends ConsumerState<WalletScreen>
 
     if (!state.loading && !_fadeController.isCompleted) {
       _fadeController.forward();
+    }
+
+    if (_shouldPopAfterWithdrawal && !state.topupLoading) {
+      _shouldPopAfterWithdrawal = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(homeProvider.notifier).refresh();
+        Future.microtask(() {
+          if (!mounted) return;
+          context.pop();
+        });
+      });
     }
 
     final balanceFmt = NumberFormat.currency(
@@ -315,33 +342,37 @@ class _WalletScreenState extends ConsumerState<WalletScreen>
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: ElevatedButton.icon(
-                                      onPressed: _startTopup,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.white,
-                                        foregroundColor: AppTheme.primary,
-                                      ),
-                                      icon: const Icon(Icons.add),
-                                      label: const Text('Recargar'),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: ElevatedButton.icon(
-                                      onPressed: _requestWithdrawal,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.white,
-                                        foregroundColor: AppTheme.primary,
-                                      ),
-                                      icon: const Icon(Icons.arrow_downward),
-                                      label: const Text('Retirar'),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                               Row(
+                                 children: [
+                                   Expanded(
+                                     child: ElevatedButton.icon(
+                                       onPressed: state.topupLoading
+                                           ? null
+                                           : _startTopup,
+                                       style: ElevatedButton.styleFrom(
+                                         backgroundColor: Colors.white,
+                                         foregroundColor: AppTheme.primary,
+                                       ),
+                                       icon: const Icon(Icons.add),
+                                       label: const Text('Recargar'),
+                                     ),
+                                   ),
+                                   const SizedBox(width: 10),
+                                   Expanded(
+                                     child: ElevatedButton.icon(
+                                       onPressed: state.topupLoading
+                                           ? null
+                                           : _requestWithdrawal,
+                                       style: ElevatedButton.styleFrom(
+                                         backgroundColor: Colors.white,
+                                         foregroundColor: AppTheme.primary,
+                                       ),
+                                       icon: const Icon(Icons.arrow_downward),
+                                       label: const Text('Retirar'),
+                                     ),
+                                   ),
+                                 ],
+                               ),
                             ],
                           ),
                         ),

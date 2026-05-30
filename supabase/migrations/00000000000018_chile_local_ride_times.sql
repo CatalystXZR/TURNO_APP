@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustin Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp — Migration 18: Chile local ride times
+-- Turno — Migration 18: Chile local ride times
 -- =============================================================
 
 -- Keep server-side validation in local Chile time.

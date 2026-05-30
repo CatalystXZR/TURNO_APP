@@ -36,54 +36,48 @@ class TermsScreen extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       'Version ${terms.version}',
-                      style: const TextStyle(color: AppTheme.subtle),
-                    ),
-                    const SizedBox(height: 14),
-                    ...terms.bullets.map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.only(top: 2),
-                              child: Icon(
-                                Icons.check_circle_outline,
-                                size: 18,
-                                color: AppTheme.primary,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(child: Text(item)),
-                          ],
-                        ),
+                      style: const TextStyle(
+                        color: AppTheme.subtle,
+                        fontSize: 12,
                       ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Al utilizar Turno, aceptas los siguientes terminos y condiciones. Por favor, leelos detenidamente.',
+                      style: TextStyle(color: AppTheme.subtle),
                     ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 12),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'Escudo legal y seguridad',
-                      style: TextStyle(fontWeight: FontWeight.w700),
+            ...terms.sections.map(
+              (section) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          section.title,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          section.body,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 8),
-                    Text(
-                      'TurnoApp actua como intermediario tecnologico. Los usuarios son responsables de la coordinacion presencial, estado del vehiculo y cumplimiento de la normativa vial chilena.',
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Boton de panico: llama al 133 de Carabineros de Chile en emergencias.',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -129,10 +123,10 @@ class TermsScreen extends StatelessWidget {
               label: const Text('Volver'),
             ),
             const SizedBox(height: 8),
-            Text(
-              'Telefono de emergencia: ${AppConstants.emergencyPhoneCL}',
+            const Text(
+              'Telefono de emergencia: 133',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppTheme.danger,
                 fontWeight: FontWeight.w700,
               ),

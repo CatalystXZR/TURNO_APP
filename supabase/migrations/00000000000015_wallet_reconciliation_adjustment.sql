@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustin Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp — Migration 15: Wallet reconciliation ledger adjustment
+-- Turno — Migration 15: Wallet reconciliation ledger adjustment
 -- =============================================================
 -- Goal:
 -- - Keep wallet balances as source of truth.

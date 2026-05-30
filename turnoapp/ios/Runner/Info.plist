@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>TurnoApp</string>
+	<string>Turno</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,15 +15,28 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>TurnoApp</string>
+	<string>Turno</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>turnoapp</string>
+			</array>
+		</dict>
+	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSCameraUsageDescription</key>
-	<string>TurnoApp usa la camara para que puedas tomar una foto de perfil.</string>
+	<string>Turno necesita acceder a la camara para que puedas tomar y subir una foto de perfil que genere confianza entre conductores y pasajeros de la comunidad universitaria.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>TurnoApp accede a tu galeria para que puedas elegir una foto de perfil.</string>
+	<string>Turno necesita acceder a tu galeria de fotos para que puedas seleccionar una imagen de perfil que te identifique ante la comunidad.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>TurnoApp usa tu ubicacion para mostrar rutas y puntos de encuentro.</string>
+	<string>Turno utiliza tu ubicacion en tiempo real para calcular la distancia entre tu y el conductor, mostrarte el punto de encuentro exacto y estimar tiempos de llegada precisos.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>TurnoApp usa tu ubicacion en segundo plano para notificaciones de proximidad.</string>
+	<string>Turno utiliza tu ubicacion en segundo plano para enviarte notificaciones de proximidad cuando el conductor este cerca de tu punto de encuentro y mantener actualizada tu posicion durante el viaje activo.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

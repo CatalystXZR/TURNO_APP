@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -57,5 +57,18 @@ class SupabaseConfig {
     );
   }
 
-  static SupabaseClient get client => Supabase.instance.client;
+  static SupabaseClient? _testClient;
+
+  static SupabaseClient get client {
+    if (_testClient != null) return _testClient!;
+    return Supabase.instance.client;
+  }
+
+  static void setClientForTest(SupabaseClient client) {
+    _testClient = client;
+  }
+
+  static void clearTestClient() {
+    _testClient = null;
+  }
 }

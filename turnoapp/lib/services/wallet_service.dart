@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -58,8 +58,8 @@ class WalletService {
     return rows.map(Transaction.fromJson).toList();
   }
 
-  /// Calls a Supabase Edge Function that creates a provider checkout preference.
-  /// Returns the `init_point` URL to launch the checkout.
+  /// Calls a Supabase Edge Function that creates a Fintoc Checkout Session.
+  /// Returns the `redirect_url` for the user to complete payment.
   Future<String> createTopupIntent(int amountCLP) async {
     final response = await _client.functions.invoke(
       'create-topup-intent',
@@ -76,24 +76,17 @@ class WalletService {
       throw Exception('payment_provider_disabled');
     }
 
-    final provider = (data['provider'] as String?)?.trim();
-    if (provider == 'stripe' && data['status'] == 'provider_not_connected') {
-      throw Exception(
-        'Stripe aun no esta habilitado. Temporalmente usamos Mercado Pago para recargas.',
-      );
-    }
-
     if (data.containsKey('error')) {
       throw Exception(
           data['error'] as String? ?? 'Error en el proveedor de pagos.');
     }
 
-    final initPoint = data['init_point'];
-    if (initPoint == null || initPoint is! String || initPoint.isEmpty) {
-      throw Exception('Respuesta inválida del proveedor de pagos.');
+    final redirectUrl = data['redirect_url'];
+    if (redirectUrl == null || redirectUrl is! String || redirectUrl.isEmpty) {
+      throw Exception('Respuesta invalida del proveedor de pagos.');
     }
 
-    return initPoint;
+    return redirectUrl;
   }
 
   /// Sandbox topup - adds balance directly without external payment provider.
@@ -117,8 +110,12 @@ class WalletService {
   }
 
   /// Delete user account - complies with Apple App Store policy.
-  Future<void> deleteUserAccount() async {
-    await _client.rpc('delete_user_account');
+  Future<void> deleteUserAccount({String? reason}) async {
+    final params = <String, dynamic>{};
+    if (reason != null && reason.trim().isNotEmpty) {
+      params['p_reason'] = reason.trim();
+    }
+    await _client.rpc('delete_user_account', params: params.isEmpty ? null : params);
     await _client.auth.signOut();
   }
 }

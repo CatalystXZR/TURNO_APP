@@ -108552,7 +108552,7 @@ r=A.aWo(r.dx,B.u1,r.CW,r.z,r.a,r.dy,r.c,r.d,r.cx,r.db,r.Q,B.al0,r.as,r.cy,r.ch,r
 q=n.z
 q=q==null?p:q.FR(B.i,B.as)
 s=o.aDF(B.OW,B.Pw,new A.rF(p,B.Th,B.T3,p,0,B.a1,new A.cE(m,B.i3)),r,B.Ub,new A.xl(k),B.VE,j,new A.yh(l),B.u_,A.aZN(p,p,p,B.tX,B.r5,p,q,p,p,p,p,p,new A.cE(A.cl(12),B.A),p),new A.vi(s),n)
-return new A.tX(p,p,p,$.b5Q(),"TurnoApp",s,!1,p)}}
+return new A.tX(p,p,p,$.b5Q(),"Turno",s,!1,p)}}
 A.aPa.prototype={
 $2(a,b){var s,r,q,p=$.dP().b
 p===$&&A.a()
@@ -108663,7 +108663,7 @@ case 6:case 1:return A.p(q,r)
 case 2:return A.o(o.at(-1),r)}})
 return A.q($async$xZ,r)},
 E(a){var s,r,q,p,o,n,m=this,l=null,k=m.r,j=A.E(a).ok.e
-j=A.a_("TurnoApp",l,l,l,l,j==null?l:j.aE7(B.i,B.bD,-0.6),B.bM,l,l)
+j=A.a_("Turno",l,l,l,l,j==null?l:j.aE7(B.i,B.bD,-0.6),B.bM,l,l)
 s=A.E(a).ok.z
 s=A.a_("Movilidad universitaria simple, segura y sin caos.",l,l,l,l,s==null?l:s.b6(B.SS),B.bM,l,l)
 r=A.E(a).ok.r
@@ -108847,7 +108847,7 @@ case 6:case 1:return A.p(q,r)
 case 2:return A.o(o.at(-1),r)}})
 return A.q($async$u8,r)},
 E(a){var s,r,q,p,o,n,m,l,k=this,j=null,i=k.at,h=A.hA(j,j,B.NJ),g=A.E(a).ok.r
-g=A.a_("Bienvenido a TurnoApp",j,j,j,j,g==null?j:g.hq(B.a4),j,j,j)
+g=A.a_("Bienvenido a Turno",j,j,j,j,g==null?j:g.hq(B.a4),j,j,j)
 s=A.E(a).ok.Q
 s=A.a_("Crea tu cuenta para publicar o reservar turnos.",j,j,j,j,s==null?j:s.b6(B.c3),j,j,j)
 r=A.di(!1,k.e,B.w9,!1,j,j,j,1,!1,j,j,j,j,j,j,B.L,B.fj,B.jr,new A.aIy())
@@ -109346,7 +109346,7 @@ A.yD.prototype={
 E(a){var s,r=null,q=A.b([B.ash,B.asi,B.ask,B.asj,B.asg],t.JB),p=t.p,o=A.b([],p)
 o=A.hA(o,r,B.NU)
 s=A.E(a).ok.w
-p=A.b([A.d3(new A.ad(B.aP,A.aM(A.b([A.a_("TurnoApp - Politica de privacidad",r,r,r,r,s==null?r:s.hq(B.bD),r,r,r),B.cC,A.a_("Version v1.0 \xb7 Actualizada 2026-04-19",r,r,r,r,B.b9,r,r,r),B.R,B.anY],p),B.J,B.k,B.m,0,B.p),r),r,r),B.R],p)
+p=A.b([A.d3(new A.ad(B.aP,A.aM(A.b([A.a_("Turno - Politica de privacidad",r,r,r,r,s==null?r:s.hq(B.bD),r,r,r),B.cC,A.a_("Version v1.0 \xb7 Actualizada 2026-04-19",r,r,r,r,B.b9,r,r,r),B.R,B.anY],p),B.J,B.k,B.m,0,B.p),r),r,r),B.R],p)
 B.b.J(p,new A.T(q,new A.anB(a),t.Gh))
 return A.h_(o,new A.iO(A.lY(p,B.ks,r,!1),r),r,r)}}
 A.anB.prototype={
@@ -109366,7 +109366,7 @@ A.zw.prototype={
 y6(a){return this.auV(a)},
 auV(a){var s=0,r=A.r(t.H),q,p
 var $async$y6=A.n(function(b,c){if(b===1)return A.o(c,r)
-for(;;)switch(s){case 0:p=A.dO(null,null,"soporte@turnoapp.app",null,A.a9(["subject","Soporte TurnoApp"],t.N,t.z),"mailto")
+for(;;)switch(s){case 0:p=A.dO(null,null,"soporte@turnoapp.app",null,A.a9(["subject","Soporte Turno"],t.N,t.z),"mailto")
 s=5
 return A.k(A.aPp(p),$async$y6)
 case 5:s=c?3:4
@@ -109396,7 +109396,7 @@ return A.q($async$y7,r)},
 E(a){var s,r=null,q=t.p,p=A.b([],q)
 p=A.hA(p,r,B.mO)
 s=A.E(a).ok.w
-return A.h_(p,new A.iO(A.lY(A.b([A.d3(new A.ad(B.aP,A.aM(A.b([A.a_("Centro de soporte TurnoApp",r,r,r,r,s==null?r:s.hq(B.bD),r,r,r),B.a5,B.aoE,B.dp,new A.Ah(B.vI,"Correo de soporte","soporte@turnoapp.app","Enviar correo",new A.aum(this,a),!1,r),B.a9,new A.Ah(B.WG,"Tiempo de respuesta","Respondemos en 24-48 horas habiles.",r,r,!1,r),B.a9,new A.Ah(B.vO,"Emergencias en Chile","Llama al 133 (Carabineros).","Llamar ahora",new A.aun(this,a),!0,r)],q),B.J,B.k,B.m,0,B.p),r),r,r),B.R,A.d3(new A.ad(B.aP,A.aM(B.a6w,B.J,B.k,B.m,0,B.p),r),r,r)],q),B.ks,r,!1),r),r,r)}}
+return A.h_(p,new A.iO(A.lY(A.b([A.d3(new A.ad(B.aP,A.aM(A.b([A.a_("Centro de soporte Turno",r,r,r,r,s==null?r:s.hq(B.bD),r,r,r),B.a5,B.aoE,B.dp,new A.Ah(B.vI,"Correo de soporte","soporte@turnoapp.app","Enviar correo",new A.aum(this,a),!1,r),B.a9,new A.Ah(B.WG,"Tiempo de respuesta","Respondemos en 24-48 horas habiles.",r,r,!1,r),B.a9,new A.Ah(B.vO,"Emergencias en Chile","Llama al 133 (Carabineros).","Llamar ahora",new A.aun(this,a),!0,r)],q),B.J,B.k,B.m,0,B.p),r),r,r),B.R,A.d3(new A.ad(B.aP,A.aM(B.a6w,B.J,B.k,B.m,0,B.p),r),r,r)],q),B.ks,r,!1),r),r,r)}}
 A.aum.prototype={
 $0(){return this.a.y6(this.b)},
 $S:0}
@@ -109409,7 +109409,7 @@ if(k!=null&&s.r!=null)B.b.J(l,A.b([B.a5,new A.e6(B.hY,r,r,A.b_3(A.de(q?B.Wo:B.Ww
 return A.ds(r,A.aM(l,B.J,B.k,B.m,0,B.p),B.y,r,r,new A.cc(B.k2,r,n,o,r,r,B.af),r,r,r,B.cg,r,r,1/0)}}
 A.zB.prototype={
 E(a){var s,r,q=null,p=A.hA(q,q,B.NV),o=A.E(a).ok.w,n=t.p
-o=A.b([A.a_("Terminos y condiciones TurnoApp",q,q,q,q,o==null?q:o.hq(B.a4),q,q,q),B.bd,A.a_("Version v1.1-legal-strikes",q,q,q,q,B.cd,q,q,q),B.dp],n)
+o=A.b([A.a_("Terminos y condiciones Turno",q,q,q,q,o==null?q:o.hq(B.a4),q,q,q),B.bd,A.a_("Version v1.1-legal-strikes",q,q,q,q,B.cd,q,q,q),B.dp],n)
 B.b.J(o,new A.T(B.a4F,new A.auP(),t.bg))
 o=A.d3(new A.ad(B.aP,A.aM(o,B.J,B.k,B.m,0,B.p),q),q,q)
 s=A.d3(new A.ad(B.aP,A.aM(B.a3f,B.J,B.k,B.m,0,B.p),q),q,q)
@@ -119711,7 +119711,7 @@ B.zF=s(["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"]
 B.cE=new A.u(!0,null,null,null,null,null,null,B.a4,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.aoe=new A.aj("Escudo legal y seguridad",null,B.cE,null,null,null,null,null,null,null,null)
 B.a5=new A.e2(null,8,null,null)
-B.aoA=new A.aj("TurnoApp actua como intermediario tecnologico. Los usuarios son responsables de la coordinacion presencial, estado del vehiculo y cumplimiento de la normativa vial chilena.",null,null,null,null,null,null,null,null,null,null)
+B.aoA=new A.aj("Turno actua como intermediario tecnologico. Los usuarios son responsables de la coordinacion presencial, estado del vehiculo y cumplimiento de la normativa vial chilena.",null,null,null,null,null,null,null,null,null,null)
 B.hH=new A.u(!0,null,null,null,null,null,null,B.ch,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.anI=new A.aj("Boton de panico: llama al 133 de Carabineros de Chile en emergencias.",null,B.hH,null,null,null,null,null,null,null,null)
 B.a3f=s([B.aoe,B.a5,B.aoA,B.a5,B.anI],t.p)
@@ -119900,7 +119900,7 @@ B.a4C=s(["\u0996\u09cd\u09f0\u09c0\u09b7\u09cd\u099f\u09aa\u09c2\u09f0\u09cd\u09
 B.Au=s(["\u0412","\u041f","\u0412","\u0421","\u0427","\u041f","\u0421"],t.s)
 B.a4E=s(["\u0d15\u0d4d\u0d30\u0d3f\u0d38\u0d4d\u200c\u0d24\u0d41\u0d35\u0d3f\u0d28\u0d4d \u0d2e\u0d41\u0d2e\u0d4d\u0d2a\u0d4d","\u0d06\u0d28\u0d4d\u0d28\u0d4b \u0d21\u0d4a\u0d2e\u0d3f\u0d28\u0d3f"],t.s)
 B.Av=s(["\u0d1c","\u0d2b\u0d46","\u0d2e\u0d3e","\u0d0f","\u0d2e\u0d46","\u0d1c\u0d42\u0d7a","\u0d1c\u0d42","\u0d13","\u0d38\u0d46","\u0d12","\u0d28","\u0d21\u0d3f"],t.s)
-B.a4F=s(["TurnoApp es una plataforma intermediaria entre conductores y pasajeros.","Comision fija por viaje: CLP 190 por asiento reservado.","Recargas de billetera aplican fee de pago del 1% para cubrir costos de procesamiento.","Tolerancia cero para conductas de riesgo o violencia.","Debes esperar al menos 10 minutos en el punto de encuentro antes de reportar no-show.","Cancelar a ultima hora o no llegar puede generar strikes y suspension.","Con 2 strikes, el conductor y su vehiculo quedan suspendidos por 2 meses.","En emergencia, usa el boton de panico y contacta al 133."],t.s)
+B.a4F=s(["Turno es una plataforma intermediaria entre conductores y pasajeros.","Comision fija por viaje: CLP 190 por asiento reservado.","Recargas de billetera aplican fee de pago del 1% para cubrir costos de procesamiento.","Tolerancia cero para conductas de riesgo o violencia.","Debes esperar al menos 10 minutos en el punto de encuentro antes de reportar no-show.","Cancelar a ultima hora o no llegar puede generar strikes y suspension.","Con 2 strikes, el conductor y su vehiculo quedan suspendidos por 2 meses.","En emergencia, usa el boton de panico y contacta al 133."],t.s)
 B.a4G=s(["enne Kristust","p\xe4rast Kristust"],t.s)
 B.Aw=s(["\u099c\u09be\u09a8\u09c1","\u09ab\u09c7\u09ac\u09cd\u09f0\u09c1","\u09ae\u09be\u09f0\u09cd\u099a","\u098f\u09aa\u09cd\u09f0\u09bf\u09b2","\u09ae\u09c7\u2019","\u099c\u09c1\u09a8","\u099c\u09c1\u09b2\u09be\u0987","\u0986\u0997","\u099b\u09c7\u09aa\u09cd\u09a4\u09c7","\u0985\u0995\u09cd\u099f\u09cb","\u09a8\u09f1\u09c7","\u09a1\u09bf\u099a\u09c7"],t.s)
 B.Ax=s(["\u0b30\u0b2c\u0b3f","\u0b38\u0b4b\u0b2e","\u0b2e\u0b19\u0b4d\u0b17\u0b33","\u0b2c\u0b41\u0b27","\u0b17\u0b41\u0b30\u0b41","\u0b36\u0b41\u0b15\u0b4d\u0b30","\u0b36\u0b28\u0b3f"],t.s)
@@ -122366,7 +122366,7 @@ B.anp=new A.aj("Quiero registrarme como conductor",null,null,null,null,null,null
 B.anq=new A.aj("Guardar cambios",null,null,null,null,null,null,null,null,null,null)
 B.NL=new A.aj("Calificar conductor",null,null,null,null,null,null,null,null,null,null)
 B.anr=new A.aj("Pasajeros",null,null,null,null,null,null,null,null,null,null)
-B.ans=new A.aj("TurnoApp",null,null,null,null,null,null,null,null,null,null)
+B.ans=new A.aj("Turno",null,null,null,null,null,null,null,null,null,null)
 B.ant=new A.aj("Este turno ya no esta disponible.",null,null,B.bM,null,null,null,null,null,null,null)
 B.anu=new A.aj("Necesaria para activar modo conductor.",null,null,null,null,null,null,null,null,null,null)
 B.anv=new A.aj("Marcar en camino",null,null,null,null,null,null,null,null,null,null)
@@ -122399,12 +122399,12 @@ B.anQ=new A.aj("Ingresar",null,null,null,null,null,null,null,null,null,null)
 B.mP=new A.aj("Volver",null,null,null,null,null,null,null,null,null,null)
 B.anS=new A.aj("Buscar ahora",null,null,null,null,null,null,null,null,null,null)
 B.anT=new A.aj("Recargar",null,null,null,null,null,null,null,null,null,null)
-B.anU=new A.aj("Esta accion eliminara tu cuenta y datos asociados de TurnoApp.",null,null,null,null,null,null,null,null,null,null)
+B.anU=new A.aj("Esta accion eliminara tu cuenta y datos asociados de Turno.",null,null,null,null,null,null,null,null,null,null)
 B.anV=new A.aj("Acepto terminos y condiciones, politica de tolerancia cero y reglas de strikes.",null,B.hG,null,null,null,null,null,null,null,null)
 B.anW=new A.aj("Tomar foto",null,null,null,null,null,null,null,null,null,null)
 B.anX=new A.aj("Finalizar y liquidar",null,null,null,null,null,null,null,null,null,null)
 B.NS=new A.aj("ME SUBI AL AUTO",null,null,null,null,null,null,null,null,null,null)
-B.anY=new A.aj("Esta politica describe como TurnoApp recopila, usa y protege la informacion personal cuando utilizas la plataforma.",null,null,null,null,null,null,null,null,null,null)
+B.anY=new A.aj("Esta politica describe como Turno recopila, usa y protege la informacion personal cuando utilizas la plataforma.",null,null,null,null,null,null,null,null,null,null)
 B.NT=new A.aj("Reintentar",null,null,null,null,null,null,null,null,null,null)
 B.anZ=new A.aj("Limpiar",null,null,null,null,null,null,null,null,null,null)
 B.ao_=new A.aj("Estos datos son obligatorios para activar el modo conductor.",null,B.cd,null,null,null,null,null,null,null,null)
@@ -122415,10 +122415,10 @@ B.ao3=new A.aj("Reportar conductor no-show",null,null,null,null,null,null,null,n
 B.ao4=new A.aj("Page Not Found",null,null,null,null,null,null,null,null,null,null)
 B.NU=new A.aj("Politica de privacidad",null,null,null,null,null,null,null,null,null,null)
 B.ao5=new A.aj("Actualizar",null,null,null,null,null,null,null,null,null,null)
-B.ao6=new A.aj("Obligatorio para conducir en TurnoApp.",null,null,null,null,null,null,null,null,null,null)
+B.ao6=new A.aj("Obligatorio para conducir en Turno.",null,null,null,null,null,null,null,null,null,null)
 B.ao7=new A.aj("Editar mi perfil y auto",null,null,null,null,null,null,null,null,null,null)
 B.ajl=new A.u(!0,B.ar,null,null,null,null,12,B.ch,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.ao8=new A.aj("TurnoApp actua como intermediario. Usa boton de panico y llama al 133 ante emergencias.",null,B.ajl,null,null,null,null,null,null,null,null)
+B.ao8=new A.aj("Turno actua como intermediario. Usa boton de panico y llama al 133 ante emergencias.",null,B.ajl,null,null,null,null,null,null,null,null)
 B.ajP=new A.u(!0,null,null,null,null,null,18,B.a4,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.ao9=new A.aj("Completa datos para modo conductor",null,B.ajP,null,null,null,null,null,null,null,null)
 B.aoa=new A.aj("Quitar foto seleccionada",null,null,null,null,null,null,null,null,null,null)
@@ -122774,7 +122774,7 @@ B.a_M=s(["Operar el servicio de movilidad universitaria y coordinar viajes entre
 B.asi=new A.lh("Para que usamos tus datos",B.a_M)
 B.a42=s(["Conservamos datos por el tiempo necesario para operar la plataforma y resolver disputas de seguridad o pagos.","Puedes editar tu perfil en cualquier momento desde la app.","Puedes solicitar eliminacion de cuenta desde Perfil > Editar perfil > Eliminar mi cuenta."],t.s)
 B.asj=new A.lh("Retencion y control de datos",B.a42)
-B.Zi=s(["Mostramos a otros usuarios solo los datos necesarios para concretar un viaje seguro.","Podemos compartir informacion con proveedores de infraestructura y pagos para operar TurnoApp.","No vendemos datos personales a terceros."],t.s)
+B.Zi=s(["Mostramos a otros usuarios solo los datos necesarios para concretar un viaje seguro.","Podemos compartir informacion con proveedores de infraestructura y pagos para operar Turno.","No vendemos datos personales a terceros."],t.s)
 B.ask=new A.lh("Como compartimos informacion",B.Zi)
 B.OH=new A.fG(0,"staging")
 B.nb=new A.fG(1,"add")

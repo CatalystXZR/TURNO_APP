@@ -1,0 +1,57 @@
+# Codemagic CI/CD Configuration for Turno
+# Docs: https://docs.codemagic.io/yaml/
+# Trigger: push to main, tag v*.*.*
+
+workflows:
+  ios-build:
+    name: iOS Build & TestFlight
+    instance_type: mac_mini_m1
+    max_build_duration: 45
+    environment:
+      flutter: 3.29.x
+      xcode: 16.x
+      cocoapods: default
+      vars:
+        SUPABASE_URL: $SUPABASE_URL
+        SUPABASE_ANON_KEY: $SUPABASE_ANON_KEY
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+      tag_patterns:
+        - pattern: v*.*.*
+          include: true
+    scripts:
+      - name: Install dependencies
+        working_directory: turnoapp
+        script: flutter pub get
+      - name: Static analysis
+        working_directory: turnoapp
+        script: flutter analyze
+      - name: Run tests
+        working_directory: turnoapp
+        script: flutter test
+        ignore_failure: true
+      - name: Build iOS
+        working_directory: turnoapp
+        script: |
+          flutter build ios --release \
+            --dart-define=SUPABASE_URL=$SUPABASE_URL \
+            --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
+    artifacts:
+      - turnoapp/build/ios/ipa/*.ipa
+      - turnoapp/build/ios/archive/Runner.xcarchive
+    publishing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: true
+        beta_groups:
+          - Testers Internos
+    notifications:
+      email:
+        recipients:
+          - $NOTIFICATION_EMAIL

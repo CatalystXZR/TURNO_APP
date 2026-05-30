@@ -169,15 +169,20 @@ class AppErrorMapper {
       return 'Ya tienes un viaje a esta hora.';
     }
 
-    if (text.contains('provider_not_connected') ||
+    if (text.contains('fintoc_secret_key_missing') ||
+        text.contains('provider_not_connected') ||
         text.contains('not_implemented')) {
-      return 'El proveedor de pagos seleccionado aun no esta habilitado.';
+      return 'Fintoc aun no esta configurado. Revisa FINTOC_SECRET_KEY en las Edge Function Secrets.';
     }
 
     if (text.contains('p0017') ||
         text.contains('auto_expired') ||
         text.contains('passenger_no_board')) {
       return 'La reserva expiro porque nunca confirmaste abordaje.';
+    }
+
+    if (text.contains('p0018') || text.contains('cancellation_cooldown')) {
+      return 'Cancelaste este turno recientemente. Espera 15 minutos para volver a reservarlo.';
     }
 
     if (text.contains('double_book_guard') ||
@@ -188,6 +193,10 @@ class AppErrorMapper {
     if (text.contains('no_show_threshold') ||
         text.contains('report_too_late')) {
       return 'Ya no puedes reportar. El viaje finalizo.';
+    }
+
+    if (text.contains('p0019') || text.contains('user_blocked')) {
+      return 'No puedes interactuar con este usuario porque uno de los dos ha bloqueado al otro.';
     }
 
     return fallback;

@@ -1,5 +1,5 @@
 name: turnoapp
-description: TurnoApp - Coordinacion de turnos universitarios
+description: Turno - Coordinacion de turnos universitarios
 publish_to: "none"
 version: 1.0.0+1
 
@@ -28,10 +28,16 @@ dependencies:
   image_picker: ^1.1.2
   flutter_local_notifications: ^17.2.3
 
+  # Monitoring
+  sentry_flutter: ^8.9.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  mocktail: ^1.0.4
+  integration_test:
+    sdk: flutter
 
 flutter:
   uses-material-design: true

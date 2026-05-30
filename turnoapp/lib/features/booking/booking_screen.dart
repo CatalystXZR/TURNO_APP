@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -29,10 +29,12 @@ import '../../services/wallet_service.dart';
 import '../../models/wallet.dart';
 import '../../models/user_review.dart';
 import '../../services/favorites_service.dart';
+import '../../services/report_service.dart';
 import '../../services/review_service.dart';
 import '../../shared/widgets/app_snackbar.dart';
 import '../../shared/widgets/decorative_background.dart';
 import '../../shared/widgets/loading_overlay.dart';
+import '../../shared/widgets/report_user_dialog.dart';
 
 class BookingScreen extends StatefulWidget {
   final String rideId;
@@ -49,6 +51,7 @@ class _BookingScreenState extends State<BookingScreen> {
   final _profileService = ProfileService();
   final _reviewService = ReviewService();
   final _favoritesService = FavoritesService();
+  final _reportService = ReportService();
 
   Ride? _ride;
   Wallet? _wallet;
@@ -135,6 +138,71 @@ class _BookingScreenState extends State<BookingScreen> {
         ),
         isError: true,
       );
+    }
+  }
+
+  void _reportDriver() {
+    final ride = _ride;
+    final driver = _driverProfile;
+    if (ride == null || driver == null) return;
+
+    showDialog<bool>(
+      context: context,
+      builder: (_) => ReportUserDialog(
+        reportedUserId: ride.driverId,
+        reportedUserName: driver.fullName ?? 'Conductor',
+      ),
+    );
+  }
+
+  Future<void> _blockDriver() async {
+    final ride = _ride;
+    final driver = _driverProfile;
+    if (ride == null || driver == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Bloquear conductor'),
+        content: Text(
+          'Al bloquear a ${driver.fullName ?? 'este conductor'}, no podra ver tu perfil ni reservar tus turnos, y tu no podras reservar los suyos.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.danger,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Bloquear'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await _reportService.blockUser(ride.driverId);
+      if (mounted) {
+        AppSnackbar.show(
+          context,
+          'Conductor bloqueado.',
+        );
+        context.pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.show(
+          context,
+          'No pudimos bloquear al conductor.',
+          isError: true,
+        );
+      }
     }
   }
 
@@ -267,6 +335,8 @@ class _BookingScreenState extends State<BookingScreen> {
                             isFavorite: _isFavoriteDriver,
                             isFavoriteLoading: _favoriteLoading,
                             onToggleFavorite: _toggleDriverFavorite,
+                            onReport: _reportDriver,
+                            onBlock: _blockDriver,
                           ),
                         const SizedBox(height: 12),
                         Card(
@@ -350,7 +420,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 const Text(
-                                  'TurnoApp actua como intermediario. Usa boton de panico y llama al 133 ante emergencias.',
+                                  'Turno actua como intermediario. Usa boton de panico y llama al 133 ante emergencias.',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: AppTheme.danger,
@@ -469,6 +539,8 @@ class _DriverProfileSection extends StatelessWidget {
   final bool isFavorite;
   final bool isFavoriteLoading;
   final VoidCallback onToggleFavorite;
+  final VoidCallback? onReport;
+  final VoidCallback? onBlock;
 
   const _DriverProfileSection({
     required this.profile,
@@ -476,6 +548,8 @@ class _DriverProfileSection extends StatelessWidget {
     required this.isFavorite,
     required this.isFavoriteLoading,
     required this.onToggleFavorite,
+    this.onReport,
+    this.onBlock,
   });
 
   @override
@@ -595,6 +669,42 @@ class _DriverProfileSection extends StatelessWidget {
                       ),
                     ),
                   ),
+            ],
+            if (onReport != null || onBlock != null) ...[
+              const SizedBox(height: 12),
+              const Divider(),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  if (onReport != null) ...[
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: onReport,
+                        icon: const Icon(Icons.flag_outlined, size: 16),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.warning,
+                          side: const BorderSide(color: AppTheme.warning),
+                        ),
+                        label: const Text('Reportar', style: TextStyle(fontSize: 12)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  if (onBlock != null) ...[
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: onBlock,
+                        icon: const Icon(Icons.block_outlined, size: 16),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.danger,
+                          side: const BorderSide(color: AppTheme.danger),
+                        ),
+                        label: const Text('Bloquear', style: TextStyle(fontSize: 12)),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ],
           ],
         ),

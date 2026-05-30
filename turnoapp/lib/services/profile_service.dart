@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -159,13 +159,13 @@ class ProfileService {
     if (uid == null) return null;
 
     final data = await _client
-        .from('users_profile')
-        .select()
-        .eq('id', uid)
-        .maybeSingle();
+        .rpc('get_profile_current_state', params: {'p_user_id': uid});
 
     if (data == null) return null;
-    return UserProfile.fromJson(data);
+
+    final row = data is List ? data.firstOrNull : data;
+    if (row == null) return null;
+    return UserProfile.fromJson(Map<String, dynamic>.from(row));
   }
 
   Future<UserProfile?> getProfileById(String userId) async {

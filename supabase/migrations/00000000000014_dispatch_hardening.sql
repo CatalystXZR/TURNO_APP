@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustin Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp — Migration 14: Dispatch hardening + anti-bypass controls
+-- Turno — Migration 14: Dispatch hardening + anti-bypass controls
 -- =============================================================
 
 -- ----------

@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -399,7 +399,7 @@ class _PublishRideScreenState extends State<PublishRideScreen> {
                   child: Column(
                     children: [
                       DropdownButtonFormField<String>(
-                        value: _selectedCommune,
+                        initialValue: _selectedCommune,
                         decoration: const InputDecoration(
                           labelText: 'Comuna de origen',
                           prefixIcon: Icon(Icons.location_on_outlined),
@@ -425,7 +425,7 @@ class _PublishRideScreenState extends State<PublishRideScreen> {
                               child: LinearProgressIndicator(minHeight: 3),
                             )
                           : DropdownButtonFormField<String>(
-                              value: _selectedUniversityId,
+                              initialValue: _selectedUniversityId,
                               decoration: const InputDecoration(
                                 labelText: 'Universidad',
                                 prefixIcon: Icon(Icons.school_outlined),
@@ -462,7 +462,7 @@ class _PublishRideScreenState extends State<PublishRideScreen> {
                               child: LinearProgressIndicator(minHeight: 3),
                             )
                           : DropdownButtonFormField<String>(
-                              value: _selectedCampusId,
+                              initialValue: _selectedCampusId,
                               decoration: const InputDecoration(
                                 labelText: 'Campus',
                                 prefixIcon: Icon(Icons.place_outlined),

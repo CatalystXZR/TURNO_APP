@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -159,8 +159,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             vehiclePlate:
                 _registerAsDriver ? _vehiclePlateController.text.trim() : null,
           );
-        } catch (_) {
-          // Ignore: trigger already creates base profile/wallet rows.
+        } catch (e) {
+          debugPrint('[Turno] Register: profile save failed (best-effort): $e');
         }
       }
 
@@ -220,7 +220,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Text(
-                            'Bienvenido a TurnoApp',
+                            'Bienvenido a Turno',
                             style: Theme.of(context)
                                 .textTheme
                                 .titleLarge
@@ -326,7 +326,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       )
                                     else
                                       DropdownButtonFormField<String>(
-                                        value: _selectedUniversityId,
+                                        initialValue: _selectedUniversityId,
                                         decoration: const InputDecoration(
                                           labelText: 'Universidad',
                                           prefixIcon:

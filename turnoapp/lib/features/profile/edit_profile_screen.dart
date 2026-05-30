@@ -513,7 +513,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Esta accion eliminara tu cuenta y datos asociados de TurnoApp.',
+              'Esta accion eliminara tu cuenta y datos asociados de Turno.',
             ),
             const SizedBox(height: 12),
             TextField(
@@ -548,9 +548,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       return;
     }
 
+    final reason = reasonController.text.trim();
     setState(() => _deleting = true);
     try {
-      await _walletService.deleteUserAccount();
+      await _walletService.deleteUserAccount(
+        reason: reason.isNotEmpty ? reason : null,
+      );
       if (!mounted) return;
       AppSnackbar.show(
         context,

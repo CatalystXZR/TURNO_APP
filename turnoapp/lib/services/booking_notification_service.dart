@@ -15,17 +15,30 @@ class BookingNotificationService {
   final Map<String, String> _driverSnapshot = {};
   bool _passengerHydrated = false;
   bool _driverHydrated = false;
-  InAppNotifyCallback? _onInAppNotify;
 
-  void setInAppNotifyCallback(InAppNotifyCallback? callback) {
-    _onInAppNotify = callback;
+  final List<InAppNotifyCallback> _inAppCallbacks = [];
+
+  void addInAppNotifyCallback(InAppNotifyCallback callback) {
+    _inAppCallbacks.add(callback);
+  }
+
+  void removeInAppNotifyCallback(InAppNotifyCallback callback) {
+    _inAppCallbacks.remove(callback);
+  }
+
+  void clearPassengerSnapshots() {
+    _passengerSnapshot.clear();
+    _passengerHydrated = false;
+  }
+
+  void clearDriverSnapshots() {
+    _driverSnapshot.clear();
+    _driverHydrated = false;
   }
 
   void clearSnapshots() {
-    _passengerSnapshot.clear();
-    _driverSnapshot.clear();
-    _passengerHydrated = false;
-    _driverHydrated = false;
+    clearPassengerSnapshots();
+    clearDriverSnapshots();
   }
 
   Future<void> syncPassengerBookings(List<Booking> bookings) async {
@@ -180,9 +193,7 @@ class BookingNotificationService {
     String? rideId,
     String? seed,
   }) {
-    final callback = _onInAppNotify;
-    if (callback == null) return;
-    callback(AppNotification(
+    final notification = AppNotification(
       id: (bookingId ?? DateTime.now().millisecondsSinceEpoch.toString()) +
           (seed ?? ''),
       title: title,
@@ -190,7 +201,11 @@ class BookingNotificationService {
       createdAt: DateTime.now(),
       bookingId: bookingId,
       rideId: rideId,
-    ));
+    );
+
+    for (final callback in _inAppCallbacks) {
+      callback(notification);
+    }
   }
 
   int _notifId(String bookingId, String seed) {

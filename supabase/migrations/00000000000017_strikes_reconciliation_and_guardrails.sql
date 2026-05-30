@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustin Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp — Migration 17: strikes reconciliation + guardrails
+-- Turno — Migration 17: strikes reconciliation + guardrails
 -- =============================================================
 
 -- 1) Rebuild counters from active strikes only (expires_at >= now())

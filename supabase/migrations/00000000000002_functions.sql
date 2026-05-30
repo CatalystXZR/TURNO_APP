@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp MVP — Migration 02: RPC Functions
+-- Turno MVP — Migration 02: RPC Functions
 -- All functions run as SECURITY DEFINER so they bypass RLS
 -- and operate atomically inside a transaction.
 -- =============================================================

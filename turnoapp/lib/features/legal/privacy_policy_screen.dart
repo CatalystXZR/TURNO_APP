@@ -36,7 +36,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
         title: 'Como compartimos informacion',
         bullets: [
           'Mostramos a otros usuarios solo los datos necesarios para concretar un viaje seguro.',
-          'Podemos compartir informacion con proveedores de infraestructura y pagos para operar TurnoApp.',
+          'Podemos compartir informacion con proveedores de infraestructura y pagos para operar Turno.',
           'No vendemos datos personales a terceros.',
         ],
       ),
@@ -81,7 +81,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'TurnoApp - Politica de privacidad',
+                      'Turno - Politica de privacidad',
                       style: Theme.of(context)
                           .textTheme
                           .titleMedium
@@ -97,7 +97,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      'Esta politica describe como TurnoApp recopila, usa y protege la informacion personal cuando utilizas la plataforma.',
+                      'Esta politica describe como Turno recopila, usa y protege la informacion personal cuando utilizas la plataforma.',
                     ),
                   ],
                 ),

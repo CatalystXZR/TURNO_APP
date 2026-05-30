@@ -1,6 +1,6 @@
 /**
  *
- * Project: TurnoApp
+ * Project: Turno
  *
  * Original Concept: Agustin Puelma, Cristobal Cordova, Carlos Ibarra
  *
@@ -13,7 +13,7 @@
  */
 
 -- =============================================================
--- TurnoApp MVP — Migration 10: Profile photos storage bucket
+-- Turno MVP — Migration 10: Profile photos storage bucket
 -- =============================================================
 
 insert into storage.buckets (id, name, public)

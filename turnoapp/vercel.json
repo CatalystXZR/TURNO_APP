@@ -1,9 +1,0 @@
-{
-  "installCommand": "bash scripts/vercel-install-flutter.sh",
-  "buildCommand": "bash scripts/vercel-build.sh",
-  "outputDirectory": "build/web",
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
-  ]
-}

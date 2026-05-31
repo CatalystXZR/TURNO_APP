@@ -16,24 +16,16 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Single access point for the Supabase client.
 /// Call [SupabaseConfig.initialize] once in main() before runApp().
+///
+/// SUPABASE_URL and SUPABASE_ANON_KEY must be injected at compile time via
+/// --dart-define=SUPABASE_URL=<url> --dart-define=SUPABASE_ANON_KEY=<key>
+/// (e.g. from Codemagic environment variables or local run arguments).
 class SupabaseConfig {
   SupabaseConfig._();
 
-  // Defaults for local development.
-  // Can be overridden with --dart-define=SUPABASE_URL / SUPABASE_ANON_KEY.
-  static const String _defaultUrl = 'https://zawaevytpkvejhekyokw.supabase.co';
-  static const String _defaultAnonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inphd2Fldnl0cGt2ZWpoZWt5b2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNzAwMjEsImV4cCI6MjA4ODk0NjAyMX0.W08CHoJ_jKSHzBvQnw-HUfjTBSdNVGBs6N89h_QPaOM';
+  static String get url => const String.fromEnvironment('SUPABASE_URL');
 
-  static String get url => const String.fromEnvironment(
-        'SUPABASE_URL',
-        defaultValue: _defaultUrl,
-      );
-
-  static String get anonKey => const String.fromEnvironment(
-        'SUPABASE_ANON_KEY',
-        defaultValue: _defaultAnonKey,
-      );
+  static String get anonKey => const String.fromEnvironment('SUPABASE_ANON_KEY');
 
   static bool get isConfigured {
     return url.isNotEmpty &&

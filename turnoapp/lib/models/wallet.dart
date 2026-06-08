@@ -1,15 +1,13 @@
 /**
- *
  * Project: Turno
- *
- * Original Concept: Agustín Puelma, Cristobal Cordova, Carlos Ibarra
- *
- * Software Architecture & Code: Matías Toledo (catalystxzr)
- *
+ * 
+ * Project Owners: Cristobal Cordova, Carlos Ibarra, Agustin Puelma
+ * Software Architecture & Code: Matias Toledo (@catalystxzr)
+ * 
  * Description: Production-grade implementation for UDD carpooling system.
- *
- * Copyright (c) 2026. All rights reserved.
- *
+ * 
+ * Copyright (c) 2026 Turno. All rights reserved.
+ * This software is proprietary and confidential.
  */
 
 class Wallet {

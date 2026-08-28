@@ -87,6 +87,7 @@ class BookingNotificationService {
       _driverSnapshot[booking.id] = key;
 
       if (prev == null) {
+        if (!shouldNotify) continue;
         if (booking.status == BookingStatus.reserved &&
             booking.dispatchStatus == BookingDispatchStatus.reserved) {
           final title = 'Nueva solicitud de viaje';

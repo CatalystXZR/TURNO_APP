@@ -134,7 +134,8 @@ class _DriverRidesScreenState extends ConsumerState<DriverRidesScreen>
               .map((item) => item.userId)
               .toSet();
         });
-      } catch (_) {
+      } catch (e) {
+        debugPrint('[Turno] DriverRides: getMyFavorites failed: $e');
         if (!mounted) return;
         setState(() => _favoritePassengerIds = <String>{});
       }
@@ -401,6 +402,13 @@ class _DriverRidesScreenState extends ConsumerState<DriverRidesScreen>
         final isFav =
             await _favoritesService.toggleFavorite(booking.passengerId);
         if (!mounted) return;
+        setState(() {
+          if (isFav) {
+            _favoritePassengerIds.add(booking.passengerId);
+          } else {
+            _favoritePassengerIds.remove(booking.passengerId);
+          }
+        });
         AppSnackbar.show(
           context,
           isFav
@@ -608,16 +616,26 @@ class _DriverRidesScreenState extends ConsumerState<DriverRidesScreen>
                             child: ListView(
                               padding: const EdgeInsets.symmetric(vertical: 6),
                               children: [
-                                if (activeRides.isNotEmpty) ...[
+                                 if (activeRides.isNotEmpty) ...[
                                   const _SectionHeader(title: 'Activos'),
                                   ...activeRides.map(
-                                    (r) => _RideCard(
-                                      ride: r,
-                                      onCancel: () => _cancelRide(r),
-                                      onComplete: () => _completeRideAction(r),
-                                      onOpenActiveRide: () =>
-                                          _openActiveRide(r),
-                                    ),
+                                    (r) {
+                                      final rideBookings = state.bookings
+                                          .where((b) => b.rideId == r.id)
+                                          .toList();
+                                      final hasBoarded = rideBookings.any(
+                                        (b) => b.isReserved && (
+                                          b.dispatchStatus == BookingDispatchStatus.passengerBoarded ||
+                                          b.dispatchStatus == BookingDispatchStatus.inProgress),
+                                      );
+                                      return _RideCard(
+                                        ride: r,
+                                        onCancel: hasBoarded ? null : () => _cancelRide(r),
+                                        onComplete: () => _completeRideAction(r),
+                                        onOpenActiveRide: () =>
+                                            _openActiveRide(r),
+                                      );
+                                    },
                                   ),
                                 ],
                                 if (pastRides.isNotEmpty) ...[
@@ -636,19 +654,25 @@ class _DriverRidesScreenState extends ConsumerState<DriverRidesScreen>
                             child: ListView.builder(
                               padding: const EdgeInsets.symmetric(vertical: 6),
                               itemCount: state.bookings.length,
-                              itemBuilder: (ctx, i) => _PassengerBookingCard(
-                                booking: state.bookings[i],
-                                onAccept: _acceptBooking,
-                                onReject: _rejectBooking,
-                                onMarkArriving: _markArriving,
-                                onMarkArrived: _markArrived,
-                                onStartTrip: _startTrip,
-                                onCompleteTrip: _completeTrip,
-                                onFavoritePassenger: _toggleFavoritePassenger,
-                                isFavoritePassenger: _favoritePassengerIds
-                                    .contains(state.bookings[i].passengerId),
-                                onReviewPassenger: _reviewPassenger,
-                              ),
+                              itemBuilder: (ctx, i) {
+                                final booking = state.bookings[i];
+                                final rideActive = state.rides.any(
+                                  (r) => r.id == booking.rideId && r.isActive,
+                                );
+                                return _PassengerBookingCard(
+                                  booking: booking,
+                                  onAccept: rideActive ? _acceptBooking : null,
+                                  onReject: rideActive ? _rejectBooking : null,
+                                  onMarkArriving: rideActive ? _markArriving : null,
+                                  onMarkArrived: rideActive ? _markArrived : null,
+                                  onStartTrip: rideActive ? _startTrip : null,
+                                  onCompleteTrip: rideActive ? _completeTrip : null,
+                                  onFavoritePassenger: _toggleFavoritePassenger,
+                                  isFavoritePassenger: _favoritePassengerIds
+                                      .contains(booking.passengerId),
+                                   onReviewPassenger: _reviewPassenger,
+                                );
+                              },
                             ),
                           ),
                       ],
@@ -685,11 +709,11 @@ class _RideCard extends StatelessWidget {
     String statusLabel;
     switch (ride.status) {
       case 'active':
-        statusColor = const Color(0xFF178E68);
+        statusColor = AppTheme.success;
         statusLabel = 'Activo';
         break;
       case 'completed':
-        statusColor = const Color(0xFF1760A3);
+        statusColor = AppTheme.completedStatus;
         statusLabel = 'Completado';
         break;
       default:
@@ -785,7 +809,7 @@ class _RideCard extends StatelessWidget {
                   icon: const Icon(Icons.check_circle_outline),
                   label: const Text('Finalizar viaje'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF178E68),
+                    backgroundColor: AppTheme.success,
                     foregroundColor: Colors.white,
                   ),
                 ),
@@ -809,6 +833,7 @@ class _PassengerBookingCard extends StatelessWidget {
   final void Function(Booking)? onFavoritePassenger;
   final bool isFavoritePassenger;
   final void Function(Booking)? onReviewPassenger;
+  final void Function(Booking)? onReportNoShow;
 
   const _PassengerBookingCard({
     required this.booking,
@@ -821,6 +846,7 @@ class _PassengerBookingCard extends StatelessWidget {
     this.onFavoritePassenger,
     required this.isFavoritePassenger,
     this.onReviewPassenger,
+    this.onReportNoShow,
   });
 
   @override
@@ -843,7 +869,7 @@ class _PassengerBookingCard extends StatelessWidget {
         statusLabel = 'Reservado';
         break;
       case BookingStatus.completed:
-        statusColor = const Color(0xFF178E68);
+        statusColor = AppTheme.success;
         statusLabel = 'Completado';
         break;
       case BookingStatus.cancelled:
@@ -933,6 +959,9 @@ class _PassengerBookingCard extends StatelessWidget {
                   ? null
                   : () => onFavoritePassenger!(booking),
               isFavorite: isFavoritePassenger,
+              onReportNoShow: onReportNoShow == null
+                  ? null
+                  : () => onReportNoShow!(booking),
             ),
           ],
         ),

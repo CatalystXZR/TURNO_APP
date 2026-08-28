@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/theme.dart';
 import '../../core/constants.dart';
@@ -30,6 +31,7 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
   String? _busyMessage;
   bool _isFavoriteDriver = false;
   bool _navigatedToArrival = false;
+  bool _callbackRegistered = false;
 
   Future<void> _runBusy(
     String message,
@@ -65,7 +67,8 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
   Booking? _bookingFromState(MyRidesState state) {
     try {
       return state.bookings.firstWhere((b) => b.id == widget.bookingId);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[Turno] ActiveTrip: bookingFromState: $e');
       return null;
     }
   }
@@ -78,7 +81,7 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
       if (!mounted) return;
       await Future.delayed(const Duration(milliseconds: 500));
       if (!mounted) return;
-      context.go('/arrival');
+      context.push('/arrival?bookingId=${booking.id}');
     }
   }
 
@@ -92,7 +95,8 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
             final isFav = await _favoritesService.isFavorite(booking.driverId!);
             if (!mounted) return;
             setState(() => _isFavoriteDriver = isFav);
-          } catch (_) {
+          } catch (e) {
+            debugPrint('[Turno] ActiveTrip: check favorite failed: $e');
             if (!mounted) return;
             setState(() => _isFavoriteDriver = false);
           }
@@ -183,6 +187,48 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
     });
   }
 
+  Future<void> _cancelBookingAction(Booking booking) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cancelar reserva'),
+        content: Text(
+          'Se devolveran \$${booking.amountTotal} a tu saldo. Quieres cancelar tu reserva?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Volver'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Cancelar reserva'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    await _runBusy('Cancelando reserva...', () async {
+      try {
+        await ref.read(myRidesProvider.notifier).cancelBooking(booking.id);
+        if (!mounted) return;
+        AppSnackbar.show(context, 'Reserva cancelada. Fondos devueltos.');
+        if (context.canPop()) context.pop();
+      } catch (e) {
+        if (!mounted) return;
+        AppSnackbar.show(
+          context,
+          AppErrorMapper.toMessage(
+            e,
+            fallback: 'No pudimos cancelar tu reserva.',
+          ),
+          isError: true,
+        );
+      }
+    });
+  }
+
   Future<void> _reviewDriver(Booking booking) async {
     await _runBusy('Publicando resena...', () async {
       try {
@@ -235,26 +281,31 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
     if (booking == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Viaje activo')),
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('No encontramos este viaje.'),
-              const SizedBox(height: 12),
-              OutlinedButton(
-                onPressed: _refresh,
-                child: const Text('Actualizar'),
+        body: state.loading
+            ? const Center(child: CircularProgressIndicator())
+            : Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('No encontramos este viaje.'),
+                    const SizedBox(height: 12),
+                    OutlinedButton(
+                      onPressed: _refresh,
+                      child: const Text('Actualizar'),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
       );
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _checkArrival(booking);
-    });
+    if (!_callbackRegistered) {
+      _callbackRegistered = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _checkArrival(booking);
+      });
+    }
 
     const flowOrder = <BookingDispatchStatus>[
       BookingDispatchStatus.reserved,
@@ -321,6 +372,10 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
     ];
 
     final canConfirmBoarding = booking.canPassengerConfirmBoarding;
+    final canCancel = booking.isReserved &&
+        booking.dispatchStatus != BookingDispatchStatus.inProgress &&
+        booking.dispatchStatus != BookingDispatchStatus.passengerBoarded &&
+        booking.dispatchStatus != BookingDispatchStatus.completed;
 
     return LoadingOverlay(
       isLoading: _busy,
@@ -343,7 +398,7 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
               if (booking.dispatchStatus == BookingDispatchStatus.cancelled ||
                   booking.dispatchStatus == BookingDispatchStatus.noShow) ...[
                 Card(
-                  color: const Color(0xFFFFF3F6),
+                  color: AppTheme.errorBg,
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Text(
@@ -434,9 +489,9 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
                                   color: step.done
                                       ? (step.highlight
                                               ? AppTheme.primary
-                                              : const Color(0xFF178E68))
+                                              : AppTheme.success)
                                           .withValues(alpha: 0.12)
-                                      : const Color(0xFF9AA8B5)
+                                      : AppTheme.inactiveStep
                                           .withValues(alpha: 0.1),
                                   shape: BoxShape.circle,
                                 ),
@@ -446,8 +501,8 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
                                   color: step.done
                                       ? (step.highlight
                                           ? AppTheme.primary
-                                          : const Color(0xFF178E68))
-                                      : const Color(0xFF9AA8B5),
+                                          : AppTheme.success)
+                                      : AppTheme.inactiveStep,
                                 ),
                               ),
                               const SizedBox(width: 10),
@@ -464,9 +519,9 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
                                             : FontWeight.w400,
                                         color: step.done
                                             ? (step.highlight
-                                                ? const Color(0xFF178E68)
+                                                ? AppTheme.success
                                                 : Colors.black87)
-                                            : const Color(0xFF9AA8B5),
+                                            : AppTheme.inactiveStep,
                                       ),
                                     ),
                                     const SizedBox(height: 1),
@@ -476,7 +531,7 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
                                         fontSize: 11,
                                         color: step.done
                                             ? AppTheme.subtle
-                                            : const Color(0xFF9AA8B5),
+                                            : AppTheme.inactiveStep,
                                       ),
                                     ),
                                   ],
@@ -492,7 +547,7 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
               ),
               const SizedBox(height: 12),
               Card(
-                color: const Color(0xFFFFF3F6),
+                color: AppTheme.errorBg,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -526,7 +581,7 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
                     onPressed: () => _confirmBoarding(booking),
                     icon: const Icon(Icons.directions_car),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF178E68),
+                      backgroundColor: AppTheme.success,
                       foregroundColor: Colors.white,
                     ),
                     label: const Text('ME SUBI AL AUTO'),
@@ -540,7 +595,7 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
                   onPressed: () => _toggleFavoriteDriver(booking),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _isFavoriteDriver
-                        ? const Color(0xFFFF5A7A)
+                        ? AppTheme.favorite
                         : Colors.white,
                     foregroundColor:
                         _isFavoriteDriver ? Colors.white : AppTheme.primary,
@@ -555,6 +610,21 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
                   ),
                 ),
               ),
+              if (canCancel) ...[
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _cancelBookingAction(booking),
+                    icon: const Icon(Icons.close),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.danger,
+                      side: const BorderSide(color: AppTheme.danger),
+                    ),
+                    label: const Text('Cancelar reserva'),
+                  ),
+                ),
+              ],
               if (booking.isCompleted) ...[
                 const SizedBox(height: 8),
                 SizedBox(
@@ -573,19 +643,25 @@ class _ActiveTripScreenState extends ConsumerState<ActiveTripScreen> {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    AppSnackbar.show(
-                      context,
-                      'Emergencia: llama al ${AppConstants.emergencyPhoneCL}',
-                      isError: true,
-                    );
+                  onPressed: () async {
+                    final uri = Uri.parse('tel:${AppConstants.emergencyPhoneCL}');
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri);
+                    } else {
+                      if (!mounted) return;
+                      AppSnackbar.show(
+                        context,
+                        'No se pudo realizar la llamada. Marca ${AppConstants.emergencyPhoneCL} manualmente.',
+                        isError: true,
+                      );
+                    }
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.danger,
                     side: const BorderSide(color: AppTheme.danger),
                   ),
                   icon: const Icon(Icons.emergency_outlined),
-                  label: const Text('Boton de emergencia'),
+                  label: const Text('Llamar emergencia'),
                 ),
               ),
             ],

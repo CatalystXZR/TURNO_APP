@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../app/theme.dart';
+
 class RideTimeStatus extends StatelessWidget {
   final DateTime departureAt;
   final bool showLabel;
@@ -27,7 +29,7 @@ class RideTimeStatus extends StatelessWidget {
       label = 'Completado';
       icon = Icons.check_circle_outline;
     } else if (isSoon) {
-      color = const Color(0xFF178E68);
+      color = AppTheme.success;
       if (diff.inMinutes <= 5) {
         label = 'Por partir';
         icon = Icons.warning_amber_rounded;
@@ -36,7 +38,7 @@ class RideTimeStatus extends StatelessWidget {
         icon = Icons.access_time;
       }
     } else {
-      color = const Color(0xFF1760A3);
+      color = AppTheme.completedStatus;
       final diffHours = diff.inHours;
       if (diffHours < 1) {
         label = 'En ${diff.inMinutes} min';

@@ -187,10 +187,12 @@ class Booking {
           ? DateTime.parse(json['cancelled_at'] as String).toLocal()
           : null,
       cancelReason: json['cancel_reason'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String).toLocal()
+          : DateTime.now(),
       rideOriginCommune: json['ride_origin_commune'] as String?,
       rideDepartureAt: json['ride_departure_at'] != null
-          ? DateTime.parse(json['ride_departure_at'] as String)
+          ? DateTime.parse(json['ride_departure_at'] as String).toLocal()
           : null,
       universityName: json['university_name'] as String?,
       campusName: json['campus_name'] as String?,
@@ -201,9 +203,7 @@ class Booking {
   bool get isCompleted => status == BookingStatus.completed;
   bool get canPassengerConfirmBoarding =>
       isReserved &&
-      (dispatchStatus == BookingDispatchStatus.accepted ||
-          dispatchStatus == BookingDispatchStatus.driverArriving ||
-          dispatchStatus == BookingDispatchStatus.driverArrived);
+      (dispatchStatus == BookingDispatchStatus.driverArrived);
   bool get canDriverStartTrip =>
       isReserved && dispatchStatus == BookingDispatchStatus.passengerBoarded;
   bool get canDriverCompleteTrip =>
@@ -232,5 +232,124 @@ class Booking {
       case BookingDispatchStatus.noShow:
         return 'No-show';
     }
+  }
+
+  Booking copyWith({
+    String? id,
+    String? rideId,
+    String? passengerId,
+    String? driverId,
+    String? driverName,
+    double? driverRating,
+    String? driverPhotoUrl,
+    String? driverVehiclePlate,
+    String? driverVehicleModel,
+    String? driverEmergencyContact,
+    String? passengerName,
+    double? passengerRating,
+    String? passengerPhotoUrl,
+    String? passengerVehiclePlate,
+    String? passengerVehicleModel,
+    int? passengerRatingCount,
+    int? driverRatingCount,
+    int? amountTotal,
+    BookingStatus? status,
+    BookingDispatchStatus? dispatchStatus,
+    DateTime? confirmedAt,
+    DateTime? reportedNoShowAt,
+    String? noShowNotes,
+    DateTime? driverAcceptedAt,
+    DateTime? driverArrivingAt,
+    DateTime? driverArrivedAt,
+    DateTime? passengerBoardedAt,
+    DateTime? tripStartedAt,
+    DateTime? tripCompletedAt,
+    DateTime? cancelledAt,
+    String? cancelReason,
+    DateTime? createdAt,
+    String? rideOriginCommune,
+    DateTime? rideDepartureAt,
+    String? universityName,
+    String? campusName,
+  }) {
+    return Booking(
+      id: id ?? this.id,
+      rideId: rideId ?? this.rideId,
+      passengerId: passengerId ?? this.passengerId,
+      driverId: driverId ?? this.driverId,
+      driverName: driverName ?? this.driverName,
+      driverRating: driverRating ?? this.driverRating,
+      driverPhotoUrl: driverPhotoUrl ?? this.driverPhotoUrl,
+      driverVehiclePlate: driverVehiclePlate ?? this.driverVehiclePlate,
+      driverVehicleModel: driverVehicleModel ?? this.driverVehicleModel,
+      driverEmergencyContact: driverEmergencyContact ?? this.driverEmergencyContact,
+      passengerName: passengerName ?? this.passengerName,
+      passengerRating: passengerRating ?? this.passengerRating,
+      passengerPhotoUrl: passengerPhotoUrl ?? this.passengerPhotoUrl,
+      passengerVehiclePlate: passengerVehiclePlate ?? this.passengerVehiclePlate,
+      passengerVehicleModel: passengerVehicleModel ?? this.passengerVehicleModel,
+      passengerRatingCount: passengerRatingCount ?? this.passengerRatingCount,
+      driverRatingCount: driverRatingCount ?? this.driverRatingCount,
+      amountTotal: amountTotal ?? this.amountTotal,
+      status: status ?? this.status,
+      dispatchStatus: dispatchStatus ?? this.dispatchStatus,
+      confirmedAt: confirmedAt ?? this.confirmedAt,
+      reportedNoShowAt: reportedNoShowAt ?? this.reportedNoShowAt,
+      noShowNotes: noShowNotes ?? this.noShowNotes,
+      driverAcceptedAt: driverAcceptedAt ?? this.driverAcceptedAt,
+      driverArrivingAt: driverArrivingAt ?? this.driverArrivingAt,
+      driverArrivedAt: driverArrivedAt ?? this.driverArrivedAt,
+      passengerBoardedAt: passengerBoardedAt ?? this.passengerBoardedAt,
+      tripStartedAt: tripStartedAt ?? this.tripStartedAt,
+      tripCompletedAt: tripCompletedAt ?? this.tripCompletedAt,
+      cancelledAt: cancelledAt ?? this.cancelledAt,
+      cancelReason: cancelReason ?? this.cancelReason,
+      createdAt: createdAt ?? this.createdAt,
+      rideOriginCommune: rideOriginCommune ?? this.rideOriginCommune,
+      rideDepartureAt: rideDepartureAt ?? this.rideDepartureAt,
+      universityName: universityName ?? this.universityName,
+      campusName: campusName ?? this.campusName,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'ride_id': rideId,
+      'passenger_id': passengerId,
+      if (driverId != null) 'driver_id': driverId,
+      if (driverName != null) 'driver_name': driverName,
+      if (driverRating != null) 'driver_rating': driverRating,
+      if (driverPhotoUrl != null) 'driver_photo_url': driverPhotoUrl,
+      if (driverVehiclePlate != null) 'driver_vehicle_plate': driverVehiclePlate,
+      if (driverVehicleModel != null) 'driver_vehicle_model': driverVehicleModel,
+      if (driverEmergencyContact != null) 'driver_emergency_contact': driverEmergencyContact,
+      if (passengerName != null) 'passenger_name': passengerName,
+      if (passengerRating != null) 'passenger_rating': passengerRating,
+      if (passengerPhotoUrl != null) 'passenger_photo_url': passengerPhotoUrl,
+      if (passengerVehiclePlate != null) 'passenger_vehicle_plate': passengerVehiclePlate,
+      if (passengerVehicleModel != null) 'passenger_vehicle_model': passengerVehicleModel,
+      if (passengerRatingCount != null) 'passenger_rating_count': passengerRatingCount,
+      if (driverRatingCount != null) 'driver_rating_count': driverRatingCount,
+      'amount_total': amountTotal,
+      'status': status.name,
+      'dispatch_status': dispatchStatus.name,
+      if (confirmedAt != null) 'confirmed_at': confirmedAt!.toIso8601String(),
+      if (reportedNoShowAt != null) 'reported_no_show_at': reportedNoShowAt!.toIso8601String(),
+      if (noShowNotes != null) 'no_show_notes': noShowNotes,
+      if (driverAcceptedAt != null) 'driver_accepted_at': driverAcceptedAt!.toIso8601String(),
+      if (driverArrivingAt != null) 'driver_arriving_at': driverArrivingAt!.toIso8601String(),
+      if (driverArrivedAt != null) 'driver_arrived_at': driverArrivedAt!.toIso8601String(),
+      if (passengerBoardedAt != null) 'passenger_boarded_at': passengerBoardedAt!.toIso8601String(),
+      if (tripStartedAt != null) 'trip_started_at': tripStartedAt!.toIso8601String(),
+      if (tripCompletedAt != null) 'trip_completed_at': tripCompletedAt!.toIso8601String(),
+      if (cancelledAt != null) 'cancelled_at': cancelledAt!.toIso8601String(),
+      if (cancelReason != null) 'cancel_reason': cancelReason,
+      'created_at': createdAt.toIso8601String(),
+      if (rideOriginCommune != null) 'ride_origin_commune': rideOriginCommune,
+      if (rideDepartureAt != null) 'ride_departure_at': rideDepartureAt!.toIso8601String(),
+      if (universityName != null) 'university_name': universityName,
+      if (campusName != null) 'campus_name': campusName,
+    };
   }
 }

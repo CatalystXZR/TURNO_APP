@@ -50,8 +50,8 @@ async function createES256Jwt(
   return `${signingInput}.${sigB64}`;
 }
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? (() => { throw new Error("SUPABASE_URL is required"); })();
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? (() => { throw new Error("SUPABASE_SERVICE_ROLE_KEY is required"); })();
 
 const APNS_KEY_ID = Deno.env.get("APNS_KEY_ID") ?? "";
 const APNS_TEAM_ID = Deno.env.get("APNS_TEAM_ID") ?? "";
@@ -65,16 +65,21 @@ const APNS_ENDPOINT = (token: string) => `/3/device/${token}`;
 
 let apnsJwtCache: { token: string; expiresAt: number } | null = null;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-internal-secret",
-};
+const ALLOWED_ORIGINS = [
+  "https://turnoapp.cl",
+  "https://www.turnoapp.cl",
+];
 
-function jsonResponse(payload: unknown, status = 200): Response {
-  return new Response(JSON.stringify(payload), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
+function corsHeadersFor(req: Request): Record<string, string> {
+  const origin = req.headers.get("Origin");
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    return {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-internal-secret",
+      "Vary": "Origin",
+    };
+  }
+  return {};
 }
 
 function logInfo(event: string, details: Record<string, unknown> = {}) {
@@ -179,8 +184,15 @@ async function sendApnsNotification(
 }
 
 serve(async (req) => {
+  const cors = corsHeadersFor(req);
+  const jsonResponse = (payload: unknown, status = 200): Response =>
+    new Response(JSON.stringify(payload), {
+      status,
+      headers: { ...cors, "Content-Type": "application/json" },
+    });
+
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: cors });
   }
 
   if (req.method !== "POST") {

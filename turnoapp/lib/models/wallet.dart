@@ -28,9 +28,32 @@ class Wallet {
       userId: json['user_id'] as String,
       balanceAvailable: (json['balance_available'] as int?) ?? 0,
       balanceHeld: (json['balance_held'] as int?) ?? 0,
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : DateTime.now(),
     );
   }
 
-  int get totalBalance => balanceAvailable + balanceHeld;
+  Wallet copyWith({
+    String? userId,
+    int? balanceAvailable,
+    int? balanceHeld,
+    DateTime? updatedAt,
+  }) {
+    return Wallet(
+      userId: userId ?? this.userId,
+      balanceAvailable: balanceAvailable ?? this.balanceAvailable,
+      balanceHeld: balanceHeld ?? this.balanceHeld,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'user_id': userId,
+      'balance_available': balanceAvailable,
+      'balance_held': balanceHeld,
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
 }

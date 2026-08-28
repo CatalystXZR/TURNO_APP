@@ -76,7 +76,11 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(path: '/wallet', builder: (_, __) => const WalletScreen()),
     GoRoute(path: '/my-rides', builder: (_, __) => const MyRidesScreen()),
-    GoRoute(path: '/arrival', builder: (_, __) => const ArrivalScreen()),
+    GoRoute(
+        path: '/arrival',
+        builder: (_, state) =>
+            ArrivalScreen(bookingId: state.uri.queryParameters['bookingId']),
+    ),
     GoRoute(
       path: '/active-trip/:bookingId',
       builder: (_, state) =>

@@ -1,16 +1,21 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-const _url = 'https://zawaevytpkvejhekyokw.supabase.co';
-const _anonKey =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inphd2Fldnl0cGt2ZWpoZWt5b2t3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNzAwMjEsImV4cCI6MjA4ODk0NjAyMX0.W08CHoJ_jKSHzBvQnw-HUfjTBSdNVGBs6N89h_QPaOM';
+const _url = String.fromEnvironment('SUPABASE_URL');
+const _anonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 
-const _passengerEmail = 'test123@turno.app';
-const _driverEmail = 'testdriver@turno.app';
-const _password = 'test123456';
-const _driverId = '036c3e6a-dd05-44b3-896c-1a32e7a0f9c9';
+const _passengerEmail = String.fromEnvironment('TEST_PASSENGER_EMAIL');
+const _driverEmail = String.fromEnvironment('TEST_DRIVER_EMAIL');
+const _password = String.fromEnvironment('TEST_PASSWORD');
+const _driverId = String.fromEnvironment('TEST_DRIVER_ID');
 
 void main() {
+  if (_url.isEmpty || _anonKey.isEmpty) {
+    test('skipped: SUPABASE_URL and SUPABASE_ANON_KEY dart-defines required', () {
+      expect(true, isTrue);
+    });
+    return;
+  }
   final client = SupabaseClient(_url, _anonKey);
 
   test('Auth: sign in as passenger', () async {

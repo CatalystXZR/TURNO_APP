@@ -15,6 +15,7 @@ class WalletState {
   final List<Transaction> transactions;
   final bool loading;
   final bool topupLoading;
+  final String? errorMessage;
   final DateTime lastFetchedAt;
 
   WalletState({
@@ -22,6 +23,7 @@ class WalletState {
     this.transactions = const [],
     this.loading = true,
     this.topupLoading = false,
+    this.errorMessage,
     DateTime? lastFetchedAt,
   }) : lastFetchedAt = lastFetchedAt ?? DateTime(2000);
 
@@ -30,6 +32,8 @@ class WalletState {
     List<Transaction>? transactions,
     bool? loading,
     bool? topupLoading,
+    String? errorMessage,
+    bool clearError = false,
     DateTime? lastFetchedAt,
   }) {
     return WalletState(
@@ -37,6 +41,7 @@ class WalletState {
       transactions: transactions ?? this.transactions,
       loading: loading ?? this.loading,
       topupLoading: topupLoading ?? this.topupLoading,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       lastFetchedAt: lastFetchedAt ?? this.lastFetchedAt,
     );
   }
@@ -84,7 +89,9 @@ class WalletNotifier extends StateNotifier<WalletState> {
       if (channel != null) {
         try {
           SupabaseConfig.client.removeChannel(channel);
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[Turno] Wallet: channel remove failed: $e');
+        }
       }
     } else if (next == AppLifecycleState.resumed) {
       if (_walletChannel == null) {
@@ -121,8 +128,9 @@ class WalletNotifier extends StateNotifier<WalletState> {
               state = state.copyWith(
                 wallet: Wallet.fromJson(record),
               );
-            } catch (_) {
-              _scheduleRefresh();
+      } catch (e) {
+        debugPrint('[Turno] Wallet: realtime payload parse error: $e');
+        _scheduleRefresh();
             }
           } else {
             _scheduleRefresh();
@@ -134,7 +142,9 @@ class WalletNotifier extends StateNotifier<WalletState> {
     );
     try {
       channel.subscribe();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[Turno] Wallet: channel subscribe failed: $e');
+    }
     _walletChannel = channel;
   }
 
@@ -149,7 +159,7 @@ class WalletNotifier extends StateNotifier<WalletState> {
   Future<void> load() async {
     if (_loading) return;
     _loading = true;
-    state = state.copyWith(loading: state.wallet == null);
+    state = state.copyWith(loading: state.wallet == null, clearError: true);
     final walletService = _ref.read(walletServiceProvider);
     try {
       final results = await Future.wait([
@@ -161,7 +171,14 @@ class WalletNotifier extends StateNotifier<WalletState> {
         wallet: results[0] as Wallet?,
         transactions: results[1] as List<Transaction>,
         loading: false,
+        clearError: true,
         lastFetchedAt: DateTime.now(),
+      );
+    } catch (e) {
+      if (_disposed || !mounted) return;
+      state = state.copyWith(
+        loading: false,
+        errorMessage: 'No pudimos cargar tu billetera. Intenta nuevamente.',
       );
     } finally {
       _loading = false;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/theme.dart';
 import '../../core/constants.dart';
@@ -35,6 +36,7 @@ class _DriverActiveRideScreenState
   String? _busyMessage;
   Set<String> _favoritePassengerIds = <String>{};
   bool _navigatedToArrival = false;
+  bool _callbackRegistered = false;
 
   Future<void> _runBusy(
     String message,
@@ -70,7 +72,8 @@ class _DriverActiveRideScreenState
   Ride? _rideFromState(DriverRidesState state) {
     try {
       return state.rides.firstWhere((r) => r.id == widget.rideId);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[Turno] DriverActive: rideFromState: $e');
       return null;
     }
   }
@@ -91,7 +94,8 @@ class _DriverActiveRideScreenState
               .map((item) => item.userId)
               .toSet();
         });
-      } catch (_) {
+      } catch (e) {
+        debugPrint('[Turno] DriverActive: getMyFavorites failed: $e');
         if (!mounted) return;
         setState(() => _favoritePassengerIds = <String>{});
       }
@@ -115,7 +119,7 @@ class _DriverActiveRideScreenState
     if (ride != null && ride.status == 'completed') {
       _navigatedToArrival = true;
       if (!mounted) return;
-      context.go('/arrival');
+      context.push('/arrival');
     }
   }
 
@@ -419,10 +423,13 @@ class _DriverActiveRideScreenState
       );
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _checkArrival();
-    });
+    if (!_callbackRegistered) {
+      _callbackRegistered = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _checkArrival();
+      });
+    }
 
     final int acceptedCount = bookings
         .where((b) =>
@@ -479,7 +486,7 @@ class _DriverActiveRideScreenState
               const SizedBox(height: 16),
               if (pendingCount > 0) ...[
                 Card(
-                  color: const Color(0xFFFFF3E6),
+                  color: AppTheme.warningBg,
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Row(
@@ -542,7 +549,7 @@ class _DriverActiveRideScreenState
                   label: 'Finalizar viaje completo',
                   description:
                       'Marca el fin del viaje. Se liberaran los pagos a tu billetera.',
-                  color: const Color(0xFF178E68),
+                  color: AppTheme.success,
                   onPressed: _completeRide,
                 ),
               if (ride.isActive && !allPassengersBoarded && !hasAnyInProgress)
@@ -604,7 +611,7 @@ class _DriverActiveRideScreenState
               ],
               const SizedBox(height: 12),
               Card(
-                color: const Color(0xFFFFF3F6),
+                color: AppTheme.errorBg,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -631,17 +638,25 @@ class _DriverActiveRideScreenState
           child: SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () => AppSnackbar.show(
-                context,
-                'Emergencia: llama al ${AppConstants.emergencyPhoneCL}',
-                isError: true,
-              ),
+              onPressed: () async {
+                final uri = Uri.parse('tel:${AppConstants.emergencyPhoneCL}');
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri);
+                } else {
+                  if (!mounted) return;
+                  AppSnackbar.show(
+                    context,
+                    'No se pudo realizar la llamada. Marca ${AppConstants.emergencyPhoneCL} manualmente.',
+                    isError: true,
+                  );
+                }
+              },
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.danger,
                 side: const BorderSide(color: AppTheme.danger),
               ),
               icon: const Icon(Icons.emergency_outlined),
-              label: const Text('Boton de emergencia'),
+              label: const Text('Llamar emergencia'),
             ),
           ),
         ),
@@ -739,11 +754,11 @@ class _RideInfoHeader extends StatelessWidget {
     String statusLabel;
     switch (ride.status) {
       case 'active':
-        statusColor = const Color(0xFF178E68);
+        statusColor = AppTheme.success;
         statusLabel = 'Activo';
         break;
       case 'completed':
-        statusColor = const Color(0xFF1760A3);
+        statusColor = AppTheme.completedStatus;
         statusLabel = 'Completado';
         break;
       default:
@@ -931,7 +946,7 @@ class _ProgressStep extends StatelessWidget {
           Icon(
             done ? Icons.check_circle : Icons.radio_button_unchecked,
             size: 18,
-            color: done ? const Color(0xFF178E68) : Colors.grey.shade400,
+            color: done ? AppTheme.success : Colors.grey.shade400,
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -939,7 +954,7 @@ class _ProgressStep extends StatelessWidget {
               '$label ($count/$total)',
               style: TextStyle(
                 fontSize: 13,
-                color: done ? const Color(0xFF178E68) : AppTheme.subtle,
+                color: done ? AppTheme.success : AppTheme.subtle,
                 fontWeight: done ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
@@ -1016,7 +1031,7 @@ class _PassengerCard extends StatelessWidget {
                           ),
                           if (isFavorite)
                             const Icon(Icons.favorite,
-                                size: 16, color: Color(0xFFFF5A7A)),
+                                size: 16, color: AppTheme.favorite),
                           const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -1084,13 +1099,13 @@ class _PassengerCard extends StatelessWidget {
       case BookingDispatchStatus.driverArriving:
         return AppTheme.primary;
       case BookingDispatchStatus.driverArrived:
-        return const Color(0xFF178E68);
+        return AppTheme.success;
       case BookingDispatchStatus.passengerBoarded:
-        return const Color(0xFF178E68);
+        return AppTheme.success;
       case BookingDispatchStatus.inProgress:
-        return const Color(0xFF1760A3);
+        return AppTheme.completedStatus;
       case BookingDispatchStatus.completed:
-        return const Color(0xFF1760A3);
+        return AppTheme.completedStatus;
       case BookingDispatchStatus.cancelled:
         return AppTheme.danger;
       case BookingDispatchStatus.noShow:

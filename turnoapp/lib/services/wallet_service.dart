@@ -29,9 +29,7 @@ class WalletService {
   Future<void> ensureWalletExists({required String userId}) async {
     await _client.from('wallets').upsert({
       'user_id': userId,
-      'balance_available': 0,
-      'balance_held': 0,
-    });
+    }, onConflict: 'user_id');
   }
 
   Future<Wallet?> getWallet() async {
@@ -46,7 +44,8 @@ class WalletService {
   }
 
   Future<List<Transaction>> getTransactions({int limit = 30}) async {
-    final uid = _client.auth.currentUser!.id;
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) return [];
     final rows = await _client
         .from('transactions')
         .select()
@@ -58,6 +57,9 @@ class WalletService {
 
   /// Calls a Supabase Edge Function that creates a Fintoc Checkout Session.
   /// Returns the `redirect_url` for the user to complete payment.
+  ///
+  /// The edge function builds success/cancel HTTPS URLs from APP_BASE_URL
+  /// (Fintoc requires HTTPS; the app listens for those links to return).
   Future<String> createTopupIntent(int amountCLP) async {
     final response = await _client.functions.invoke(
       'create-topup-intent',

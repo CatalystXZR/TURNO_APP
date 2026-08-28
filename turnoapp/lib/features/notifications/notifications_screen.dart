@@ -18,8 +18,6 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-        () => ref.read(inAppNotificationProvider.notifier).markAllAsRead());
   }
 
   @override
@@ -93,7 +91,7 @@ class _NotificationCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: notification.isRead
                       ? Colors.grey.shade100
-                      : const Color(0xFFE7F3FF),
+                      : AppTheme.infoBg,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(

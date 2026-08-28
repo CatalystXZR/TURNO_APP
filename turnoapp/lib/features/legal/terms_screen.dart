@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/theme.dart';
+import '../../core/constants.dart';
 import '../../shared/widgets/decorative_background.dart';
 import '../../services/legal_service.dart';
 
@@ -116,16 +117,10 @@ class TermsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: () => Navigator.of(context).maybePop(),
-              icon: const Icon(Icons.arrow_back),
-              label: const Text('Volver'),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Telefono de emergencia: 133',
+            Text(
+              'Telefono de emergencia: ${AppConstants.emergencyPhoneCL}',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppTheme.danger,
                 fontWeight: FontWeight.w700,
               ),

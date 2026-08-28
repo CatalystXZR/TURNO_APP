@@ -13,49 +13,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../core/error_mapper.dart';
 import '../core/retry_config.dart';
 import '../core/supabase_client.dart';
 import '../models/booking.dart';
 
 class BookingService {
   final _client = SupabaseConfig.client;
-
-  String _mapPostgresError(dynamic error) {
-    final errorStr = error.toString().toLowerCase();
-
-    if (errorStr.contains('p0004') || errorStr.contains('insufficient')) {
-      return 'Saldo insuficiente en billetera';
-    }
-    if (errorStr.contains('p0016') || errorStr.contains('overlapping')) {
-      return 'Choque de horarios con otro viaje';
-    }
-    if (errorStr.contains('p0010') ||
-        errorStr.contains('ride_departed') ||
-        errorStr.contains('partio')) {
-      return 'El viaje ya partio';
-    }
-    if (errorStr.contains('p0001') || errorStr.contains('unauthorized')) {
-      return 'Sesion expirada. Vuelve a iniciar sesion';
-    }
-    if (errorStr.contains('p0002') || errorStr.contains('unavailable')) {
-      return 'Este turno ya no esta disponible';
-    }
-    if (errorStr.contains('p0003') || errorStr.contains('already booked')) {
-      return 'Ya tienes una reserva en este turno';
-    }
-    if (errorStr.contains('p0011') || errorStr.contains('forbidden')) {
-      return 'No puedes realizar esta accion';
-    }
-
-    if (error is PostgrestException) {
-      final details = error.details as String?;
-      final hint = error.hint;
-      if (details != null && details.isNotEmpty) return details;
-      if (hint != null && hint.isNotEmpty) return hint;
-    }
-
-    return error.toString();
-  }
 
   Future<T> _retryRpc<T>(
     String fn, {
@@ -95,9 +59,9 @@ class BookingService {
 
       return result;
     } on PostgrestException catch (e) {
-      throw Exception(_mapPostgresError(e));
+      throw Exception(AppErrorMapper.toMessage(e));
     } catch (e) {
-      throw Exception(_mapPostgresError(e));
+      throw Exception(AppErrorMapper.toMessage(e));
     }
   }
 
@@ -171,7 +135,8 @@ class BookingService {
   }
 
   Future<List<Booking>> getMyBookings({int limit = 80}) async {
-    final uid = _client.auth.currentUser!.id;
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) return [];
     final rows = await _client
         .from('bookings')
         .select('''
@@ -233,7 +198,8 @@ class BookingService {
   }
 
   Future<List<Booking>> getBookingsForMyRides({int limit = 100}) async {
-    final uid = _client.auth.currentUser!.id;
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) return [];
 
     try {
       final rows = await _client

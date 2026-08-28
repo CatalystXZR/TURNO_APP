@@ -61,10 +61,6 @@ class AppErrorMapper {
       return 'No tienes permitido registrarte con este correo.';
     }
 
-    if (text.contains('p0001') || text.contains('unauthorized')) {
-      return 'Tu sesion expiro. Vuelve a iniciar sesion.';
-    }
-
     if (text.contains('p0002') || text.contains('ride unavailable')) {
       return 'Este turno ya no esta disponible.';
     }
@@ -81,6 +77,14 @@ class AppErrorMapper {
       return 'La reserva ya fue procesada.';
     }
 
+    if (text.contains('p0011') ||
+        text.contains('invalid_dispatch_transition') ||
+        text.contains('booking_not_active') ||
+        text.contains('cannot_cancel_started_trip') ||
+        text.contains('passenger_not_boarded')) {
+      return 'No puedes ejecutar esa accion en el estado actual del viaje.';
+    }
+
     if (text.contains('p0006') || text.contains('forbidden')) {
       return 'No tienes permisos para realizar esta accion.';
     }
@@ -91,14 +95,6 @@ class AppErrorMapper {
 
     if (text.contains('p0010') || text.contains('ride_departed')) {
       return 'Este viaje ya inicio.';
-    }
-
-    if (text.contains('p0011') ||
-        text.contains('invalid_dispatch_transition') ||
-        text.contains('booking_not_active') ||
-        text.contains('cannot_cancel_started_trip') ||
-        text.contains('passenger_not_boarded')) {
-      return 'No puedes ejecutar esa accion en el estado actual del viaje.';
     }
 
     if (text.contains('p0012') || text.contains('held_balance_mismatch')) {

@@ -75,19 +75,28 @@ class AuthService {
   }
 
   Future<void> deleteMyAccount({String? reason}) async {
-    final response = await _client.functions.invoke(
-      'delete-account',
-      body: {
-        if (reason != null && reason.trim().isNotEmpty) 'reason': reason.trim(),
-      },
-    );
+    try {
+      final response = await _client.functions.invoke(
+        'delete-account',
+        body: {
+          if (reason != null && reason.trim().isNotEmpty) 'reason': reason.trim(),
+        },
+      );
 
-    final data = response.data;
-    if (data is Map<String, dynamic> && data['success'] == true) {
-      await _client.auth.signOut();
-      return;
+      final data = response.data;
+      if (data is Map<String, dynamic> && data['success'] == true) {
+        try {
+          await _client.auth.signOut();
+        } catch (_) {
+          throw Exception('Cuenta eliminada pero no se pudo cerrar sesion. Reinicia la app.');
+        }
+        return;
+      }
+
+      throw Exception('No pudimos eliminar tu cuenta en este momento.');
+    } catch (e) {
+      if (e.toString().contains('Cuenta eliminada')) rethrow;
+      throw Exception('No pudimos eliminar tu cuenta en este momento.');
     }
-
-    throw Exception('No pudimos eliminar tu cuenta en este momento.');
   }
 }

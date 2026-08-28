@@ -79,7 +79,7 @@ class TurnoCard extends StatelessWidget {
                     width: 34,
                     height: 34,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE7F3FF),
+                      color: AppTheme.infoBg,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
@@ -106,7 +106,7 @@ class TurnoCard extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEAF4FF),
+                      color: AppTheme.infoBgAlt,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -134,7 +134,7 @@ class TurnoCard extends StatelessWidget {
                     Icons.event_seat_outlined,
                     size: 14,
                     color: seatsAvailable > 0
-                        ? const Color(0xFF178E68)
+                        ? AppTheme.success
                         : AppTheme.danger,
                   ),
                   const SizedBox(width: 4),
@@ -142,7 +142,7 @@ class TurnoCard extends StatelessWidget {
                     '$seatsAvailable cupo${seatsAvailable == 1 ? '' : 's'}',
                     style: TextStyle(
                       color: seatsAvailable > 0
-                          ? const Color(0xFF178E68)
+                          ? AppTheme.success
                           : AppTheme.danger,
                       fontSize: 13,
                     ),

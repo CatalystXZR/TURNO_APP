@@ -76,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF040B18), Color(0xFF0A1A31), Color(0xFF0D2848)],
+              colors: const [AppTheme.backgroundDarkStart, AppTheme.backgroundDarkMid, AppTheme.backgroundDarkEnd],
             ),
           ),
           child: SafeArea(
@@ -142,9 +142,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                     labelText: 'Correo',
                                     prefixIcon: Icon(Icons.email_outlined),
                                   ),
-                                  validator: (v) => v != null && v.contains('@')
-                                      ? null
-                                      : 'Correo invalido',
+                                  validator: (v) {
+                                    if (v == null || v.trim().isEmpty) return 'Correo requerido';
+                                    return RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v.trim())
+                                        ? null
+                                        : 'Correo invalido';
+                                  },
                                 ),
                                 const SizedBox(height: 14),
                                 TextFormField(

@@ -159,6 +159,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           );
         } catch (e) {
           debugPrint('[Turno] Register: profile save failed (best-effort): $e');
+          if (mounted) {
+            AppSnackbar.show(
+              context,
+              'Tu cuenta fue creada pero algunos datos no se guardaron. Puedes completarlos en tu perfil.',
+              isError: true,
+            );
+          }
         }
       }
 
@@ -201,7 +208,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF040B18), Color(0xFF0A1A31), Color(0xFF0D2848)],
+              colors: const [AppTheme.backgroundDarkStart, AppTheme.backgroundDarkMid, AppTheme.backgroundDarkEnd],
             ),
           ),
           child: SafeArea(
@@ -254,9 +261,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               labelText: 'Correo universitario',
                               prefixIcon: Icon(Icons.email_outlined),
                             ),
-                            validator: (v) => v != null && v.contains('@')
-                                ? null
-                                : 'Correo invalido',
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) return 'Correo requerido';
+                              return RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v.trim())
+                                  ? null
+                                  : 'Correo invalido';
+                            },
                           ),
                           const SizedBox(height: 14),
                           _loadingUniversities
@@ -317,7 +327,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           color: const Color(0xFFFDF4F6),
                                         ),
                                         child: const Text(
-                                          'No hay universidades disponibles. Revisa tu conexion o permisos en Supabase (migraciones 06 y 07).',
+                                          'No hay universidades disponibles. Revisa tu conexion e intenta nuevamente.',
                                           style: TextStyle(
                                               color: Color(0xFF8A2F43)),
                                         ),

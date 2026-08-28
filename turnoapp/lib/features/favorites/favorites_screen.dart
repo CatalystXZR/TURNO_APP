@@ -245,6 +245,14 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                                         item.userId,
                                         item.fullName ?? 'Usuario',
                                       ),
+                                  trailing: IconButton(
+                                    icon: const Icon(Icons.more_vert),
+                                    onPressed: () => _showActionsSheet(
+                                      context,
+                                      item.userId,
+                                      item.fullName ?? 'Usuario',
+                                    ),
+                                  ),
                                   leading: CircleAvatar(
                                     backgroundColor: Theme.of(context)
                                         .colorScheme
@@ -295,10 +303,6 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                                           ),
                                         ),
                                     ],
-                                  ),
-                                  trailing: const Icon(
-                                    Icons.favorite,
-                                    color: Color(0xFFFF5A7A),
                                   ),
                                 ),
                               );

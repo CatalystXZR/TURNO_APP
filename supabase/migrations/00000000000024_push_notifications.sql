@@ -35,7 +35,7 @@ create or replace function push_notify_dispatch_change(
 returns void
 language plpgsql
 security definer
-set search_path = ''
+set search_path = public
 as $$
 declare
   v_passenger_id   uuid;
@@ -122,7 +122,7 @@ create or replace function trg_booking_event_push()
 returns trigger
 language plpgsql
 security definer
-set search_path = ''
+set search_path = public
 as $$
 begin
   begin

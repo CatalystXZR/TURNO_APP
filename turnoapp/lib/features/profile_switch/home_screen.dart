@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/theme.dart';
 import '../../core/constants.dart';
@@ -317,8 +318,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                             modelController.text.trim(),
                                         vehicleVersion:
                                             versionController.text.trim(),
-                                        vehicleDoors: int.parse(
-                                            doorsController.text.trim()),
+                                        vehicleDoors: int.tryParse(
+                                            doorsController.text.trim()) ?? 4,
                                         vehiclePlate: plateController.text
                                             .trim()
                                             .toUpperCase()
@@ -442,7 +443,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             IconButton(
               icon: const Icon(Icons.logout),
               onPressed: () async {
-                await ref.read(authServiceProvider).signOut();
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Cerrar sesion'),
+                    content: const Text('Estas seguro de que deseas cerrar sesion?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: const Text('Cancelar'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: const Text('Cerrar sesion'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true && mounted) {
+                  await ref.read(authServiceProvider).signOut();
+                }
               },
             ),
           ],
@@ -546,7 +566,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             icon: Icons.directions_car_outlined,
                             label: 'Mis turnos publicados',
                             subtitle: 'Revisa pasajeros y estado de viajes',
-                            color: const Color(0xFF1760A3),
+                            color: AppTheme.completedStatus,
                             onTap: () => context.push('/driver-rides'),
                           ),
                         ] else ...[
@@ -563,7 +583,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             label: 'Mis reservas',
                             subtitle:
                                 'Sigue el estado del viaje y revisa historial',
-                            color: const Color(0xFF1760A3),
+                            color: AppTheme.completedStatus,
                             onTap: () => context.push('/my-rides'),
                           ),
                         ],
@@ -601,12 +621,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         ),
                         const SizedBox(height: 10),
                         OutlinedButton.icon(
-                          onPressed: () {
-                            AppSnackbar.show(
-                              context,
-                              'En emergencia llama al ${AppConstants.emergencyPhoneCL}.',
-                              isError: true,
-                            );
+                          onPressed: () async {
+                            final uri = Uri.parse('tel:${AppConstants.emergencyPhoneCL}');
+                            if (await canLaunchUrl(uri)) {
+                              await launchUrl(uri);
+                            } else {
+                              if (!context.mounted) return;
+                              AppSnackbar.show(
+                                context,
+                                'No se pudo realizar la llamada. Marca ${AppConstants.emergencyPhoneCL} manualmente.',
+                                isError: true,
+                              );
+                            }
                           },
                           icon: const Icon(Icons.emergency_outlined),
                           style: OutlinedButton.styleFrom(
@@ -789,7 +815,7 @@ class _BalanceCard extends StatelessWidget {
         ),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x551073D6),
+            color: AppTheme.gradientShadow,
             blurRadius: 28,
             offset: Offset(0, 14),
           ),
@@ -800,7 +826,7 @@ class _BalanceCard extends StatelessWidget {
         children: [
           const Text(
             'Saldo disponible',
-            style: TextStyle(fontSize: 13, color: Color(0xFFD7E8F2)),
+            style: TextStyle(fontSize: 13, color: AppTheme.gradientLabel),
           ),
           const SizedBox(height: 2),
           Text(
@@ -814,7 +840,7 @@ class _BalanceCard extends StatelessWidget {
           if (held > 0)
             Text(
               '$heldStr en reservas activas',
-              style: const TextStyle(fontSize: 12, color: Color(0xFFD7E8F2)),
+              style: const TextStyle(fontSize: 12, color: AppTheme.gradientLabel),
             ),
           const SizedBox(height: 14),
           ElevatedButton.icon(

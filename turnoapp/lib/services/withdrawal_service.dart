@@ -16,22 +16,35 @@ import '../core/constants.dart';
 class WithdrawalService {
   final _client = SupabaseConfig.client;
 
-  /// Minimum withdrawal: $20.000 CLP.
+  Future<double> _getAvailableBalance() async {
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) throw Exception('Usuario no autenticado.');
+    final data = await _client.from('wallets').select('balance_available').eq('user_id', uid).maybeSingle();
+    if (data == null) return 0;
+    return (data['balance_available'] as num).toDouble();
+  }
+
   Future<void> requestWithdrawal(int amountCLP) async {
     if (amountCLP < AppConstants.minWithdrawalCLP) {
       throw Exception(
-          'El monto mínimo de retiro es \$${AppConstants.minWithdrawalCLP}');
+          'El monto minimo de retiro es \$${AppConstants.minWithdrawalCLP}');
     }
-    final uid = _client.auth.currentUser!.id;
-    await _client.from('withdrawals').insert({
-      'driver_id': uid,
-      'amount': amountCLP,
-      'status': 'requested',
+    final balance = await _getAvailableBalance();
+    if (amountCLP > balance) {
+      throw Exception(
+          'Saldo insuficiente. Tu saldo disponible es \$${balance.toInt()}');
+    }
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) throw Exception('Usuario no autenticado.');
+
+    await _client.rpc('sandbox_withdraw', params: {
+      'p_amount': amountCLP,
     });
   }
 
   Future<List<Map<String, dynamic>>> getWithdrawals() async {
-    final uid = _client.auth.currentUser!.id;
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) return [];
     return _client
         .from('withdrawals')
         .select()

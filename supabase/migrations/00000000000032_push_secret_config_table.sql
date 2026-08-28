@@ -33,17 +33,17 @@ comment on table app_config is 'Application configuration values. Set via SQL Ed
 -- but restrict write to service_role
 alter table app_config enable row level security;
 
-create policy "Authenticated users can read config"
+create policy "Service role only can read config secrets"
     on app_config for select
-    using (true);
+    using (auth.role() = 'service_role');
 
-create policy "Only service_role can modify config"
+create policy "Only service_role can insert config"
     on app_config for insert
-    with check (true);
+    with check (auth.role() = 'service_role');
 
 create policy "Only service_role can update config"
     on app_config for update
-    using (true);
+    using (auth.role() = 'service_role');
 
 -- =============================================================
 -- B) Insert the push secret row (placeholder)
@@ -68,7 +68,7 @@ create or replace function public.push_notify_dispatch_change(
 returns void
 language plpgsql
 security definer
-set search_path = ''
+set search_path = public
 as $$
 declare
     v_passenger_id   uuid;

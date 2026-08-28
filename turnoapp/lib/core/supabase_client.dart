@@ -41,6 +41,7 @@ class SupabaseConfig {
   }
 
   static Future<void> initialize() async {
+    ensureConfigured();
     await Supabase.initialize(
       url: url,
       anonKey: anonKey,

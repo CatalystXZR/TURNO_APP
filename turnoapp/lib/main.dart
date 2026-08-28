@@ -39,7 +39,9 @@ Future<void> main() async {
         await SupabaseConfig.initialize();
         await NotificationService.instance.initialize();
         await PushNotificationService.instance.initialize();
-      } catch (_) {
+      } catch (e, s) {
+        debugPrint('[Turno] Init error: $e\n$s');
+        await Sentry.captureException(e, stackTrace: s);
         runApp(const _ConfigurationErrorApp());
         return;
       }

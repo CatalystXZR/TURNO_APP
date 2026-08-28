@@ -211,11 +211,28 @@ class _BookingScreenState extends State<BookingScreen> {
     final totalCharge = _ride!.seatPrice + (_ride!.platformFee);
 
     if (balance < totalCharge) {
-      AppSnackbar.show(
-        context,
-        'Saldo insuficiente. Recarga tu billetera.',
-        isError: true,
+      final goToWallet = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Saldo insuficiente'),
+          content: Text(
+            'Necesitas \$$totalCharge pero tu saldo es \$$balance. Deseas recargar tu billetera?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Ir a billetera'),
+            ),
+          ],
+        ),
       );
+      if (goToWallet == true && mounted) {
+        context.push('/wallet');
+      }
       return;
     }
 
@@ -273,11 +290,18 @@ class _BookingScreenState extends State<BookingScreen> {
   @override
   Widget build(BuildContext context) {
     final price = _ride?.seatPrice ?? 0;
+    final platformFee = _ride?.platformFee ?? 190;
+    final totalCharge = price + platformFee;
     final priceFmt = NumberFormat.currency(
       locale: 'es_CL',
       symbol: '\$',
       decimalDigits: 0,
     ).format(price);
+    final totalChargeFmt = NumberFormat.currency(
+      locale: 'es_CL',
+      symbol: '\$',
+      decimalDigits: 0,
+    ).format(totalCharge);
 
     final balanceFmt = NumberFormat.currency(
       locale: 'es_CL',
@@ -374,7 +398,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                 ),
                                 _PriceRow(
                                   label: 'Total a retener',
-                                  value: priceFmt,
+                                  value: totalChargeFmt,
                                   bold: true,
                                 ),
                                 const SizedBox(height: 8),
@@ -482,7 +506,7 @@ class _InfoSection extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE7F3FF),
+                    color: AppTheme.infoBg,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -570,7 +594,7 @@ class _DriverProfileSection extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 22,
-                  backgroundColor: const Color(0xFFE7F3FF),
+                  backgroundColor: AppTheme.infoBg,
                   backgroundImage: (profile.profilePhotoUrl != null &&
                           profile.profilePhotoUrl!.isNotEmpty)
                       ? NetworkImage(profile.profilePhotoUrl!)
@@ -607,7 +631,7 @@ class _DriverProfileSection extends StatelessWidget {
                   icon: Icon(
                     isFavorite ? Icons.favorite : Icons.favorite_border,
                     color: isFavorite
-                        ? const Color(0xFFFF5A7A)
+                        ? AppTheme.favorite
                         : Theme.of(context).colorScheme.primary,
                   ),
                 ),

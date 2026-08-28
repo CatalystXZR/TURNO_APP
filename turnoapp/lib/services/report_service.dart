@@ -1,4 +1,5 @@
 import '../core/supabase_client.dart';
+import '../core/error_mapper.dart';
 
 class ReportService {
   final _client = SupabaseConfig.client;
@@ -9,19 +10,27 @@ class ReportService {
     String? details,
     String? bookingId,
   }) async {
-    await _client.rpc('report_user', params: {
-      'p_reported_user_id': reportedUserId,
-      'p_reason_category': reasonCategory,
-      if (details != null && details.trim().isNotEmpty)
-        'p_details': details.trim(),
-      if (bookingId != null) 'p_booking_id': bookingId,
-    });
+    try {
+      await _client.rpc('report_user', params: {
+        'p_reported_user_id': reportedUserId,
+        'p_reason_category': reasonCategory,
+        if (details != null && details.trim().isNotEmpty)
+          'p_details': details.trim(),
+        if (bookingId != null) 'p_booking_id': bookingId,
+      });
+    } catch (e) {
+      throw Exception(AppErrorMapper.toMessage(e));
+    }
   }
 
   Future<void> blockUser(String targetUserId) async {
-    await _client.rpc('block_user', params: {
-      'p_blocked_user_id': targetUserId,
-    });
+    try {
+      await _client.rpc('block_user', params: {
+        'p_blocked_user_id': targetUserId,
+      });
+    } catch (e) {
+      throw Exception(AppErrorMapper.toMessage(e));
+    }
   }
 
   Future<void> unblockUser(String targetUserId) async {

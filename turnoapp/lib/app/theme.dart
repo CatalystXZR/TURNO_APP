@@ -21,10 +21,29 @@ class AppTheme {
   static const Color accent = Color(0xFF6EEBFF);
   static const Color danger = Color(0xFFBA3E5A);
   static const Color warning = Color(0xFFD39A2F);
+  static const Color success = Color(0xFF178E68);
   static const Color surface = Color(0xFFF1F7FF);
   static const Color onSurface = Color(0xFF0D1728);
   static const Color subtle = Color(0xFF5C6F8B);
   static const Color border = Color(0xFFCFE0F4);
+
+  static const Color completedStatus = Color(0xFF1760A3);
+  static const Color favorite = Color(0xFFFF5A7A);
+  static const Color inactiveStep = Color(0xFF9AA8B5);
+  static const Color errorBg = Color(0xFFFFF3F6);
+  static const Color warningBg = Color(0xFFFFF3E6);
+  static const Color infoBg = Color(0xFFE7F3FF);
+  static const Color infoBgAlt = Color(0xFFEAF4FF);
+
+  static const Color gradientDarkStart = Color(0xFF041227);
+  static const Color gradientDarkMid = Color(0xFF0E3A63);
+  static const Color gradientDarkEnd = Color(0xFF1F8DE6);
+  static const Color gradientShadow = Color(0x551073D6);
+  static const Color gradientLabel = Color(0xFFD7E8F2);
+
+  static const Color backgroundDarkStart = Color(0xFF040B18);
+  static const Color backgroundDarkMid = Color(0xFF0A1A31);
+  static const Color backgroundDarkEnd = Color(0xFF0D2848);
 
   static ThemeData get light {
     final base = ThemeData(

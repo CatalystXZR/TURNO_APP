@@ -39,6 +39,27 @@ class SupportScreen extends StatelessWidget {
   }
 
   Future<void> _openEmergencyCall(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Llamada de emergencia'),
+        content: const Text(
+          'Estas seguro de que deseas llamar al ${AppConstants.emergencyPhoneCL} (Carabineros)?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Llamar'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !context.mounted) return;
+
     final uri = Uri(scheme: 'tel', path: AppConstants.emergencyPhoneCL);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
@@ -142,7 +163,7 @@ class SupportScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Card(
-              color: const Color(0xFFFFF3F6),
+              color: AppTheme.errorBg,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(

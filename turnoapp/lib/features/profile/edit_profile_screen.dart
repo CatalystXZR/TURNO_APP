@@ -451,7 +451,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                     const SizedBox(height: 12),
                     Card(
-                      color: const Color(0xFFFFF3F6),
+                      color: AppTheme.errorBg,
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(

@@ -64,7 +64,7 @@ create or replace function public.push_notify_dispatch_change(
 returns void
 language plpgsql
 security definer
-set search_path = ''
+set search_path = public
 as $$
 declare
   v_passenger_id   uuid;

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme.dart';
+
 class ReviewDialog extends StatefulWidget {
   final String title;
   final String subtitle;
@@ -46,7 +48,7 @@ class _ReviewDialogState extends State<ReviewDialog> {
                   value <= _stars ? Icons.star : Icons.star_border,
                   color: value <= _stars
                       ? const Color(0xFFFFC945)
-                      : const Color(0xFF9AA8B5),
+                      : AppTheme.inactiveStep,
                 ),
               );
             }),

@@ -199,6 +199,28 @@ class _PublishRideScreenState extends State<PublishRideScreen> {
       return;
     }
 
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirmar publicacion'),
+        content: Text(
+          'Vas a publicar un turno con $_seats cupo${_seats > 1 ? 's' : ''}. '
+          'Los pasajeros podran reservar inmediatamente.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Publicar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
     setState(() => _loading = true);
     try {
       if (!(_profile?.acceptedTerms ?? false)) {
@@ -294,16 +316,16 @@ class _PublishRideScreenState extends State<PublishRideScreen> {
                   borderRadius: BorderRadius.circular(20),
                   gradient: const LinearGradient(
                     colors: [
-                      Color(0xFF041227),
-                      Color(0xFF0E3A63),
-                      Color(0xFF1F8DE6),
+                      AppTheme.gradientDarkStart,
+                      AppTheme.gradientDarkMid,
+                      AppTheme.gradientDarkEnd,
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   boxShadow: const [
                     BoxShadow(
-                      color: Color(0x551073D6),
+                      color: AppTheme.gradientShadow,
                       blurRadius: 24,
                       offset: Offset(0, 12),
                     ),
@@ -346,7 +368,7 @@ class _PublishRideScreenState extends State<PublishRideScreen> {
                             style: Theme.of(context)
                                 .textTheme
                                 .bodySmall
-                                ?.copyWith(color: const Color(0xFFD7E8F2)),
+                                ?.copyWith(color: AppTheme.gradientLabel),
                           ),
                         ],
                       ),
@@ -511,7 +533,7 @@ class _PublishRideScreenState extends State<PublishRideScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF3F6),
+                    color: AppTheme.errorBg,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: const Color(0xFFEACCD3)),
                   ),
@@ -586,7 +608,7 @@ class _PublishRideScreenState extends State<PublishRideScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEAF4FF),
+                          color: AppTheme.infoBgAlt,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(

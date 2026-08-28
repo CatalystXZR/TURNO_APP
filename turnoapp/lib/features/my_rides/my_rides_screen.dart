@@ -98,7 +98,8 @@ class _MyRidesScreenState extends ConsumerState<MyRidesScreen>
               .map((item) => item.userId)
               .toSet();
         });
-      } catch (_) {
+      } catch (e) {
+        debugPrint('[Turno] MyRides: check favorites failed: $e');
         if (!mounted) return;
         setState(() => _favoriteDriverIds = <String>{});
       }
@@ -123,11 +124,21 @@ class _MyRidesScreenState extends ConsumerState<MyRidesScreen>
       (b) =>
           b.isCompleted && b.dispatchStatus == BookingDispatchStatus.completed,
     );
-    if (hasCompletedTrip) {
-      _navigatedToArrival = true;
-      context.go('/arrival');
+    if (hasCompletedTrip && !_hasShownArrivalPrompt) {
+      _hasShownArrivalPrompt = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+      final completedBooking = state.bookings
+          .firstWhere(
+            (b) => b.isCompleted && b.dispatchStatus == BookingDispatchStatus.completed,
+            orElse: () => state.bookings.first,
+          );
+        context.push('/arrival?bookingId=${completedBooking.id}');
+      });
     }
   }
+
+  bool _hasShownArrivalPrompt = false;
 
   Future<void> _confirmBoarding(Booking booking) async {
     final confirmed = await showDialog<bool>(
@@ -159,7 +170,7 @@ class _MyRidesScreenState extends ConsumerState<MyRidesScreen>
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF178E68),
+              backgroundColor: AppTheme.success,
               foregroundColor: Colors.white,
             ),
             child: const Text('ME SUBI AL AUTO'),
@@ -328,6 +339,13 @@ class _MyRidesScreenState extends ConsumerState<MyRidesScreen>
       try {
         final isFav = await _favoritesService.toggleFavorite(driverId);
         if (!mounted) return;
+        setState(() {
+          if (isFav) {
+            _favoriteDriverIds.add(driverId);
+          } else {
+            _favoriteDriverIds.remove(driverId);
+          }
+        });
         AppSnackbar.show(
           context,
           isFav
@@ -575,7 +593,7 @@ class _BookingCard extends StatelessWidget {
         statusLabel = 'Reservado';
         break;
       case BookingStatus.completed:
-        statusColor = const Color(0xFF178E68);
+        statusColor = AppTheme.success;
         statusLabel = 'Completado';
         break;
       case BookingStatus.cancelled:
@@ -593,10 +611,10 @@ class _BookingCard extends StatelessWidget {
       BookingDispatchStatus.reserved => AppTheme.subtle,
       BookingDispatchStatus.accepted => AppTheme.primary,
       BookingDispatchStatus.driverArriving => AppTheme.primary,
-      BookingDispatchStatus.driverArrived => const Color(0xFF178E68),
-      BookingDispatchStatus.passengerBoarded => const Color(0xFF178E68),
-      BookingDispatchStatus.inProgress => const Color(0xFF178E68),
-      BookingDispatchStatus.completed => const Color(0xFF1760A3),
+      BookingDispatchStatus.driverArrived => AppTheme.success,
+      BookingDispatchStatus.passengerBoarded => AppTheme.success,
+      BookingDispatchStatus.inProgress => AppTheme.success,
+      BookingDispatchStatus.completed => AppTheme.completedStatus,
       BookingDispatchStatus.cancelled => AppTheme.danger,
       BookingDispatchStatus.noShow => AppTheme.warning,
     };
@@ -694,7 +712,7 @@ class _BookingCard extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF178E68),
+                    backgroundColor: AppTheme.success,
                     foregroundColor: Colors.white,
                   ),
                 ),
@@ -725,7 +743,7 @@ class _BookingCard extends StatelessWidget {
                   onPressed: () => onFavoriteDriver!(booking),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isFavoriteDriver
-                        ? const Color(0xFFFF5A7A)
+                        ? AppTheme.favorite
                         : Colors.white,
                     foregroundColor:
                         isFavoriteDriver ? Colors.white : AppTheme.primary,
@@ -761,10 +779,7 @@ class _BookingCard extends StatelessWidget {
               ),
             ],
             if (booking.isReserved &&
-                (booking.dispatchStatus == BookingDispatchStatus.accepted ||
-                    booking.dispatchStatus ==
-                        BookingDispatchStatus.driverArriving ||
-                    booking.dispatchStatus ==
+                (booking.dispatchStatus ==
                         BookingDispatchStatus.driverArrived) &&
                 onReportNoShow != null) ...[
               const SizedBox(height: 8),

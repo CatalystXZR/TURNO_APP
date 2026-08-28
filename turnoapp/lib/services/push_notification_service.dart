@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/supabase_client.dart';
@@ -86,6 +87,7 @@ class PushNotificationService {
       }, onConflict: 'user_id, token');
     } catch (e) {
       debugPrint('[Turno] Error registering push token: $e');
+      Sentry.captureException(e);
     }
   }
 }

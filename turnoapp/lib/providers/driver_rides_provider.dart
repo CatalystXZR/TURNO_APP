@@ -183,11 +183,9 @@ class DriverRidesNotifier extends StateNotifier<DriverRidesState> {
   }
 
   void _subscriptionCleanup(Future<void> Function() action) {
-    try {
-      action();
-    } catch (e) {
+    action().catchError((e) {
       debugPrint('[Turno] DriverRides: subscription cleanup failed: $e');
-    }
+    });
   }
 
   void _scheduleLazyRefresh() {

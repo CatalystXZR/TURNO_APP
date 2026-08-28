@@ -10,10 +10,15 @@
  * This software is proprietary and confidential.
  */
 
+import 'dart:async';
+
+import 'package:app_links/app_links.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/theme.dart';
 import '../../core/constants.dart';
@@ -24,6 +29,7 @@ import '../../providers/wallet_provider.dart';
 import '../../shared/widgets/app_snackbar.dart';
 import '../../shared/widgets/decorative_background.dart';
 import '../../shared/widgets/loading_overlay.dart';
+import 'fintoc_checkout_screen.dart';
 
 class WalletScreen extends ConsumerStatefulWidget {
   const WalletScreen({super.key});
@@ -39,6 +45,9 @@ class _WalletScreenState extends ConsumerState<WalletScreen>
   bool _operationInProgress = false;
   bool _shouldPopAfterWithdrawal = false;
 
+  StreamSubscription<Uri>? _topupLinkSub;
+  static String? _lastHandledTopupLink;
+
   @override
   void initState() {
     super.initState();
@@ -50,13 +59,53 @@ class _WalletScreenState extends ConsumerState<WalletScreen>
       parent: _fadeController,
       curve: Curves.easeOut,
     );
+    _topupLinkSub = AppLinks().uriLinkStream.listen(_handleTopupReturn);
+    _handleInitialTopupLink();
     Future.microtask(() => ref.read(walletProvider.notifier).load());
   }
 
   @override
   void dispose() {
+    _topupLinkSub?.cancel();
     _fadeController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleInitialTopupLink() async {
+    try {
+      final initial = await AppLinks().getInitialLink();
+      if (initial != null) {
+        _handleTopupReturn(initial);
+      }
+    } catch (e) {
+      debugPrint('[Turno] Wallet: initial link error: $e');
+    }
+  }
+
+  void _handleTopupReturn(Uri uri) {
+    // iOS: turnoapp://wallet?topup=success -> host == 'wallet'
+    // Web: https://turnoapp.cl/wallet?topup=success -> path == /wallet
+    final isWalletLink = uri.host == 'wallet' || uri.path.contains('/wallet');
+    if (!isWalletLink) return;
+    final result = uri.queryParameters['topup'];
+    if (result == null) return;
+    if (_lastHandledTopupLink == uri.toString()) return;
+    _lastHandledTopupLink = uri.toString();
+    _showTopupResult(result);
+  }
+
+  void _showTopupResult(String? result) {
+    if (!mounted) return;
+    if (result == 'success') {
+      AppSnackbar.show(context, 'Recarga completada. Tu saldo ya esta disponible.');
+    } else if (result == 'failure') {
+      AppSnackbar.show(
+        context,
+        'El pago fue cancelado o no se completo. Intentalo nuevamente.',
+        isError: true,
+      );
+    }
+    _load();
   }
 
   Future<void> _load() async {
@@ -94,7 +143,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen>
             ),
             const SizedBox(height: 4),
             const Text(
-              'Modo sandbox: se agregara saldo directamente a tu billetera.',
+              'Pagas de forma segura a traves de Fintoc (bancos y tarjetas).',
               style: TextStyle(color: AppTheme.subtle, fontSize: 13),
             ),
             const SizedBox(height: 16),
@@ -125,18 +174,66 @@ class _WalletScreenState extends ConsumerState<WalletScreen>
 
     if (selected == null || !mounted) return;
 
+    final fee = AppConstants.topupFeeForAmount(selected);
+    final charged = AppConstants.topupChargedAmount(selected);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirmar recarga'),
+        content: Text(
+          'Se cargaran \$$charged a tu medio de pago '
+          '(incluye \$$fee de comision). '
+          'Se abrira Fintoc dentro de la app para completar el pago.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Pagar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
     _operationInProgress = true;
     try {
-      await ref.read(walletProvider.notifier).sandboxTopup(selected);
+      final redirectUrl =
+          await ref.read(walletProvider.notifier).createTopupIntent(selected);
       if (!mounted) return;
-      AppSnackbar.show(context, 'Recarga realizada con exito');
+      final uri = Uri.tryParse(redirectUrl);
+      if (uri == null) {
+        throw Exception('payment_provider_error');
+      }
+      if (kIsWeb) {
+        // webview_flutter has no web implementation: open Fintoc in a new tab
+        // and rely on the AppLinks stream to catch the return URL.
+        final launched = await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+        if (!launched) {
+          throw Exception('payment_provider_error');
+        }
+      } else {
+        final result = await Navigator.of(context).push<String>(
+          MaterialPageRoute(
+            builder: (_) => FintocCheckoutScreen(initialUrl: uri.toString()),
+          ),
+        );
+        if (!mounted) return;
+        _showTopupResult(result);
+      }
     } catch (e) {
       if (!mounted) return;
       AppSnackbar.show(
         context,
         AppErrorMapper.toMessage(
           e,
-          fallback: 'No pudimos realizar la recarga. Intenta nuevamente.',
+          fallback: 'No pudimos iniciar el pago. Intenta nuevamente.',
         ),
         isError: true,
       );
@@ -195,7 +292,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen>
               ),
               const SizedBox(height: 8),
               const Text(
-                'Modo sandbox: el monto se agregara a tu saldo inmediatamente.',
+                'Modo sandbox: el monto se debitara de tu saldo inmediatamente.',
                 style: TextStyle(fontSize: 12, color: AppTheme.subtle),
               ),
             ],
@@ -307,14 +404,14 @@ class _WalletScreenState extends ConsumerState<WalletScreen>
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                               colors: [
-                                Color(0xFF041227),
-                                Color(0xFF0E3A63),
-                                Color(0xFF1F8DE6),
+                                AppTheme.gradientDarkStart,
+                                AppTheme.gradientDarkMid,
+                                AppTheme.gradientDarkEnd,
                               ],
                             ),
                             boxShadow: const [
                               BoxShadow(
-                                color: Color(0x551073D6),
+                                color: AppTheme.gradientShadow,
                                 blurRadius: 24,
                                 offset: Offset(0, 12),
                               ),
@@ -327,7 +424,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen>
                                 'Saldo disponible',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Color(0xFFD7E8F2),
+                                  color: AppTheme.gradientLabel,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -431,10 +528,10 @@ class _TransactionTile extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         leading: CircleAvatar(
           backgroundColor:
-              isCredit ? const Color(0xFFE9F6EE) : const Color(0xFFFCEDEF),
+              isCredit ? const                                 Color(0xE9F6EE) : const Color(0xFFFCEDEF),
           child: Icon(
             isCredit ? Icons.arrow_downward : Icons.arrow_upward,
-            color: isCredit ? const Color(0xFF178E68) : AppTheme.danger,
+            color: isCredit ? AppTheme.success : AppTheme.danger,
             size: 18,
           ),
         ),
@@ -447,7 +544,7 @@ class _TransactionTile extends StatelessWidget {
         trailing: Text(
           '${isCredit ? '+' : '-'}$amtFmt',
           style: TextStyle(
-            color: isCredit ? const Color(0xFF178E68) : AppTheme.danger,
+            color: isCredit ? AppTheme.success : AppTheme.danger,
             fontWeight: FontWeight.w700,
             fontSize: 15,
           ),

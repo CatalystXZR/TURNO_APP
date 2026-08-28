@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../core/supabase_client.dart';
 import '../core/constants.dart';
 
@@ -19,8 +21,8 @@ class ReferenceDataService {
       if (normalized.isNotEmpty) {
         return normalized;
       }
-    } catch (_) {
-      // Fallback below.
+    } catch (e) {
+      debugPrint('[Turno] ReferenceData: getUniversities fallback: $e');
     }
 
     _lastCallUsedFallback = true;
@@ -41,8 +43,8 @@ class ReferenceDataService {
         _lastCallUsedFallback = false;
         return Map<String, dynamic>.from(row);
       }
-    } catch (_) {
-      // Fallback below.
+    } catch (e) {
+      debugPrint('[Turno] ReferenceData: getUniversities fallback: $e');
     }
 
     _lastCallUsedFallback = true;
@@ -69,8 +71,8 @@ class ReferenceDataService {
       if (normalized.isNotEmpty) {
         return normalized;
       }
-    } catch (_) {
-      // Fallback below.
+    } catch (e) {
+      debugPrint('[Turno] ReferenceData: getUniversities fallback: $e');
     }
 
     _lastCallUsedFallback = true;
@@ -111,8 +113,8 @@ class ReferenceDataService {
       if (normalized.isNotEmpty) {
         return normalized;
       }
-    } catch (_) {
-      // Fallback below.
+    } catch (e) {
+      debugPrint('[Turno] ReferenceData: getUniversities fallback: $e');
     }
 
     _lastCallUsedFallback = true;

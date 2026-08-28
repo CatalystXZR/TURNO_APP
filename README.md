@@ -1,55 +1,9 @@
-# Uniride — Turno
+# **README COMPLETO - TURNO**
 
 > **Plataforma de carpooling universitario en Chile**
 > iOS nativo + Supabase + Fintoc
 
 ---
-
-## PENDIENTE: Cambio de nombre de app (TurnoApp → Turno)
-
-El rename cosmético de la app ya está aplicado (clase Dart `Turno`, títulos, strings de UI, etc.).
-Queda pendiente actualizar los siguientes recursos externos cuando se decida hacer el cambio completo:
-
-| Recurso | Valor actual | Valor nuevo |
-|---|---|---|
-| Dominio web | `turnoapp.cl` | `turno.cl` |
-| Email de soporte | `turnoappchile@gmail.com` | `turnochile@gmail.com` |
-| Bundle ID iOS | `com.uniride.turnoapp` | `com.uniride.turno` |
-| MethodChannel push | `cl.turnoapp/push` | `cl.turno/push` |
-| APNs Bundle ID | `cl.turnoapp.mobile` | `cl.turno.mobile` |
-| Internal push secret | `turnoapp-internal-push-call-v1` | `turno-internal-push-call-v1` |
-| URL scheme iOS | `turnoapp` | `turno` |
-| Nombre paquete pubspec | `turnoapp` | `turno` |
-| Directorio Flutter | `turnoapp/` | `turno/` |
-
-**IMPORTANTE:** Estos cambios requieren coordinación con App Store Connect (nuevo Bundle ID = nueva app),
-configuración de Supabase (redirect URLs, variables de entorno), y Apple Developer (APNs keys, push certificates).
-No aplicar hasta tener el nuevo dominio y el plan de migración definido.
-
----
-
-## INICIO RÁPIDO
-
-### Correr local (desarrollo)
-
-```bash
-cd turnoapp
-flutter pub get
-flutter run -d chrome \
-  --dart-define=SUPABASE_URL=https://zawaevytpkvejhekyokw.supabase.co \
-  --dart-define=SUPABASE_ANON_KEY=TU_ANON_KEY
-```
-
-### Build iOS
-
-```bash
-cd turnoapp
-flutter build ios --release \
-  --dart-define=SUPABASE_URL=https://tu-proyecto.supabase.co \
-  --dart-define=SUPABASE_ANON_KEY=tu-anon-key
-```
-
-Luego en Xcode: Product → Archive → Distribute App → App Store Connect.
 
 ### Cuentas demo
 
@@ -82,38 +36,27 @@ select public.credit_wallet_topup(
 | PUC, UCH | $2.500 | $190 | $2.690 | $2.500 |
 | Otras | $2.000 | $190 | $2.190 | $2.000 |
 
-### Variables de entorno
 
-Copiar `.env.example` → `.env`:
-
-```
-SUPABASE_URL=https://TU_PROYECTO.supabase.co
-SUPABASE_ANON_KEY=TU_ANON_KEY
-SUPABASE_SERVICE_ROLE_KEY=TU_SERVICE_ROLE_KEY
-FINTOC_SECRET_KEY=sk_test_xxx
-FINTOC_WEBHOOK_SECRET=xxx
-FINTOC_PUBLIC_KEY=pk_test_xxx
-APP_BASE_URL=https://turnoapp.cl
-PAYMENT_PROVIDER=fintoc
-```
-
-### Fintoc — Flujo de recarga
+### Fintoc — Flujo de recarga (sandbox)
 
 ```
 Usuario → Edge Function create-topup-intent
-  → POST /v2/checkout_sessions (Fintoc API)
+  → POST /v2/checkout_sessions (Fintoc API, modo test)
+  → fintoc_payments INSERT pending
   → Retorna redirect_url
-  → Usuario paga en página Fintoc
+  → Usuario paga en página Fintoc (credenciales de test)
   → Webhook fintoc-webhook → RPC credit_wallet_topup() acredita billetera
 ```
 
+> Keys y pasos de configuración: [`FINTOC_SETUP.md`](FINTOC_SETUP.md).
+
 ---
 
-# DOSSIER TÉCNICO — UniRide (Turno)
+# DOSSIER TÉCNICO - TURNO
 
 > **Plataforma de carpooling universitario en Chile**
-> Concepto original: Agustín Puelma, Cristóbal Córdova, Carlos Ibarra
-> Arquitectura y código: Matías Toledo (catalystxzr)
+> Dueños del proyecto: Agustín Puelma, Cristóbal Córdova, Carlos Ibarra
+> Arquitectura y código: Matías Toledo (@catalystxzr)
 > Año: 2026
 
 ---
@@ -141,7 +84,7 @@ Usuario → Edge Function create-topup-intent
    - 6.5. Índices
    - 6.6. Reglas de inmutabilidad (Ledger)
    - 6.7. Vistas operativas
-   - 6.8. Evolución del esquema (27 migraciones)
+   - 6.8. Evolución del esquema (33 migraciones)
 7. [Edge Functions (Deno + TypeScript)](#7-edge-functions-deno--typescript)
 8. [Realtime — Canales Supabase](#8-realtime--canales-supabase)
 9. [Storage — Fotos de perfil](#9-storage--fotos-de-perfil)
@@ -304,7 +247,7 @@ uniride/                                    # Raíz del monorepo
 │
 ├── supabase/                               # ═══ BACKEND: Supabase ═══
 │   ├── config.toml                         # Config del CLI de Supabase
-│   ├── migrations/                         # 27 migraciones SQL versionadas (00-27)
+│   ├── migrations/                         # 33 migraciones SQL versionadas (00-33)
 │   └── functions/                          # 4 Edge Functions (Deno + TypeScript)
 │       ├── create-topup-intent/            # Crea sesión de pago Fintoc
 │       ├── fintoc-webhook/                 # Recibe webhooks de Fintoc
@@ -328,7 +271,7 @@ uniride/                                    # Raíz del monorepo
 │
 ├── supabase/                               # ═══ BACKEND: Supabase ═══
 │   ├── config.toml                         # Config del CLI de Supabase (local dev)
-│   ├── migrations/                         # 27 migraciones SQL versionadas (00-27)
+│   ├── migrations/                         # 33 migraciones SQL versionadas (00-33)
 
 ---
 
@@ -1249,6 +1192,12 @@ Cada migración es un archivo SQL versionado que se aplica secuencialmente:
 | 25 | `_campus_carroceria_pricing_overlap.sql` | Drop vehicle_body_type, fix pricing (pasajero paga 2190), overlap reducido a ±10min |
 | 26 | `_bookings_driver_id_for_realtime.sql` | Agrega driver_id en bookings para canales realtime eficientes |
 | 27 | `_fintoc_payments.sql` | Tabla fintoc_payments, actualiza credit_wallet_topup y delete_user_account |
+| 28 | `_fix_strikes_double_count.sql` | Fix conteo doble de strikes + auto-expire |
+| 29 | `_adversarial_audit_fixes.sql` | Fixes de auditoría adversarial |
+| 30 | `_security_hardening.sql` | Endurecimiento de seguridad |
+| 31 | `_ugc_reporting_and_blocking.sql` | Reporte de contenido y bloqueo de usuarios |
+| 32 | `_push_secret_config_table.sql` | Secret de push vía tabla de configuración |
+| 33 | `_fintoc_sandbox_readiness.sql` | payment_intent_id, credit_wallet_topup pending→approved, update_fintoc_payment_status |
 
 ---
 
@@ -1264,8 +1213,10 @@ Cada migración es un archivo SQL versionado que se aplica secuencialmente:
 1. Autentica usuario vía JWT
 2. Valida monto (2,000–200,000 CLP)
 3. Calcula fee del 1% (`amount_charged = amount_requested + fee`)
-4. POST a `https://api.fintoc.com/v2/checkout_sessions` con `metadata: { user_id, amount_requested }`
-5. Retorna `redirect_url` — el usuario paga en la página hosteada por Fintoc
+4. Sanitiza `success_url`/`cancel_url` del cliente (solo `turnoapp://` u origin de `APP_BASE_URL`)
+5. POST a `https://api.fintoc.com/v2/checkout_sessions` (header `Authorization` = secret key, sin Bearer) con `metadata: { user_id, amount_requested }` + `line_items`
+6. INSERT `fintoc_payments` con `status=pending` (tracking de ciclo de vida)
+7. Retorna `redirect_url` — el usuario paga en la página hosteada por Fintoc
 
 Si `PAYMENT_PROVIDER=disabled`, retorna mensaje de deshabilitado.
 
@@ -1275,12 +1226,21 @@ Si `PAYMENT_PROVIDER=disabled`, retorna mensaje de deshabilitado.
 
 **Archivo:** `supabase/functions/fintoc-webhook/index.ts`
 
-**Propósito:** Recibe eventos de Fintoc (`checkout_session.finished`, `payment_intent.succeeded`) y acredita la billetera.
+**Propósito:** Recibe eventos de Fintoc y acredita la billetera cuando el pago es exitoso.
+
+**Eventos manejados:**
+| Evento | Acción |
+|--------|--------|
+| `checkout_session.finished` (pi.status=succeeded) | `credit_wallet_topup` → pending→approved + acredita wallet |
+| `checkout_session.finished` (pi.status=failed) | marca `fintoc_payments.status=failed` |
+| `checkout_session.expired` | marca `expired` |
+| `payment_intent.succeeded` | acredita vía `payment_intent_id` correlacionado |
+| `payment_intent.failed` / `payment_intent.rejected` | actualiza estado a `failed` |
 
 **Flujo:**
-1. Verifica firma HMAC-SHA256 del header `Fintoc-Signature` (formato `t=<ts>,v1=<sig>`, ventana 5 min)
-2. Extrae `user_id` y `amount_requested` del `metadata` de la sesión
-3. Idempotencia contra `fintoc_payments` por `checkout_session_id`
+1. Verifica firma HMAC-SHA256 del header `Fintoc-Signature` (formato `t=<ts>,v1=<sig>` separado por comas, ventana 5 min)
+2. Resuelve el pago desde `fintoc_payments` (monto autoritativo; fallback a metadata)
+3. Idempotencia contra `fintoc_payments` por `checkout_session_id` (status approved = no-op)
 4. Llama RPC `credit_wallet_topup` con provider `fintoc`
 
 **Variables:** `FINTOC_WEBHOOK_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
@@ -1347,41 +1307,39 @@ La app utiliza **5 canales de Supabase Realtime** que escuchan cambios en Postgr
 
 ## 10. SISTEMA DE PAGOS
 
-### Flujo de recarga (sandbox/dev)
-
-```
-Usuario → WalletScreen → selecciona monto → sandboxTopup(amount)
-                                             ↓
-                                    RPC sandbox_topup
-                                             ↓
-                                    Wallet balance_available += amount
-                                    Transaction ledger: type=topup
-```
-
-### Flujo de recarga con Fintoc (producción)
+### Flujo de recarga con Fintoc (sandbox/test)
 
 ```
 Usuario → WalletScreen → selecciona monto → createTopupIntent(amount)
                                                 ↓
                                      Edge Function: create-topup-intent
+                                     - valida monto (2.000–200.000)
+                                     - fee 1% → amount_charged
                                                 ↓
                                      Fintoc API: POST /v2/checkout_sessions
                                      Metadata: { user_id, amount_requested }
+                                     fintoc_payments: INSERT status=pending
                                                 ↓
                                      Retorna redirect_url
                                                 ↓
-                                     Usuario paga en página Fintoc
+                                     Usuario paga en página Fintoc (modo test)
                                                 ↓
-                                     Fintoc envía webhook → fintoc-webhook
+                                     Fintoc redirige a turnoapp://wallet?topup=success
+                                                ↓
+                                     Fintoc envía webhooks → fintoc-webhook
+                                     - checkout_session.finished (pi.status=succeeded)
+                                     - payment_intent.succeeded
                                                 ↓
                                      Verifica firma Fintoc-Signature + idempotencia
                                                 ↓
-                                     RPC credit_wallet_topup
+                                     RPC credit_wallet_topup (pending → approved)
                                                 ↓
                                      Wallet balance_available += amount
-                                     fintoc_payments: registra checkout_session_id
+                                     fintoc_payments: status=approved, payment_intent_id
                                      Transaction ledger: type=topup
 ```
+
+> **Keys pendientes y pasos de configuración:** ver [`FINTOC_SETUP.md`](FINTOC_SETUP.md).
 
 ### Flujo de retiro
 
@@ -1629,33 +1587,7 @@ Si ningún patrón coincide → "No pudimos completar la operación. Intenta nue
 
 ---
 
-## 18. DESPLIEGUE Y CI/CD
-
-### iOS — Codemagic
-
-**Archivo:** `codemagic.yaml`
-
-CI/CD automático para iOS:
-```yaml
-triggers: push a main / tag v*.*.*
-scripts: flutter pub get → flutter analyze → flutter test → flutter build ios --release
-publishing: App Store Connect → TestFlight (beta group: Testers Internos)
-```
-
-**Variables en Codemagic UI:**
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `APP_STORE_CONNECT_PRIVATE_KEY` / `KEY_IDENTIFIER` / `ISSUER_ID`
-
-### Build local iOS
-
-```bash
-cd turnoapp
-flutter build ios --release \
-  --dart-define=SUPABASE_URL=$SUPABASE_URL \
-  --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
-# Luego en Xcode: Product → Archive → Distribute App → App Store Connect
-```
+## 18. DESPLOY
 
 ### Backend — Supabase Cloud
 
@@ -1684,14 +1616,16 @@ supabase functions deploy delete-account --no-verify-jwt
 
 | Variable | Uso |
 |----------|-----|
-| `FINTOC_SECRET_KEY` | Secret key de Fintoc (`sk_test_xxx` o `sk_live_xxx`) |
-| `FINTOC_WEBHOOK_SECRET` | Secret para validar firma de webhooks Fintoc |
+| `FINTOC_SECRET_KEY` | Secret key de Fintoc (`sk_test_xxx` para sandbox, `sk_live_xxx` para producción) — **pendiente de obtener** |
+| `FINTOC_WEBHOOK_SECRET` | Secret para validar firma de webhooks Fintoc — **pendiente de obtener** |
 | `APP_BASE_URL` | URL pública de la app |
 | `PAYMENT_PROVIDER` | `fintoc` o `disabled` |
 | `SUPABASE_URL` | URL del proyecto |
 | `SUPABASE_SERVICE_ROLE_KEY` | Key admin (nunca exponer en frontend) |
 | `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_BUNDLE_ID`, `APNS_KEY_BASE64` | Push notifications APNs |
 | `INTERNAL_PUSH_SECRET` | Secret para llamadas internas de push |
+
+> Ver [`FINTOC_SETUP.md`](FINTOC_SETUP.md) para el checklist completo de keys Fintoc y pasos de sandbox.
 
 ---
 
@@ -1770,11 +1704,15 @@ supabase functions deploy delete-account --no-verify-jwt
 ```
 1. Home → Wallet card → /wallet
 2. Toca "Recargar" → bottom sheet con montos rápidos
-3. Selecciona monto (ej: $10.000)
-4. sandboxTopup(10000) → RPC sandbox_topup
-5. DB: wallets.balance_available += 10000
-6. DB: INSERT transactions (type=topup, amount=+10000)
-7. walletProvider.reload() → actualiza UI
+3. Selecciona monto (ej: $10.000) → confirma con fee del 1% visible
+4. createTopupIntent(10000) → Edge Function crea Checkout Session Fintoc
+5. fintoc_payments: INSERT status=pending (checkout_session_id, amounts)
+6. App abre redirect_url en el navegador → usuario paga en Fintoc (modo test)
+7. Fintoc redirige a turnoapp://wallet?topup=success → app vuelve a /wallet
+8. Fintoc envía checkout_session.finished + payment_intent.succeeded
+9. fintoc-webhook verifica firma → credit_wallet_topup → pending→approved
+10. DB: wallets.balance_available += 10000, transactions (type=topup)
+11. walletProvider (realtime + deep link) actualiza la UI
 ```
 
 ### 19.6. Cancelación con reembolso
@@ -1807,7 +1745,7 @@ supabase functions deploy delete-account --no-verify-jwt
 - Reporte no-show
 - Cancelación de turno por conductor con reembolso
 - Sistema de strikes y suspensión
-- Wallet y recarga sandbox + integración Fintoc (edge functions desplegadas)
+- Wallet y recarga vía Fintoc (Checkout Session + webhook, listo para keys de sandbox — ver `FINTOC_SETUP.md`)
 - Retiro sandbox
 - Reseñas post-viaje
 - Favoritos de usuarios
@@ -1822,14 +1760,14 @@ supabase functions deploy delete-account --no-verify-jwt
 ### Pendientes
 
 **P0 (corto plazo):**
-- Conectar cuenta Fintoc real (obtener API keys de producción)
+- ~~Obtener API keys de Fintoc (test) y seguir `FINTOC_SETUP.md`~~ ✅ Sandbox verificado end-to-end (2026-08-25)
+- Publicar `turnoapp.cl` + universal links para el retorno a la app tras pagar
 - Conectar Codemagic al repo + App Store Connect
 - Ajustar UX de políticas y mensajes de strikes
 
 **P1 (siguiente iteración):**
 - Implementar multas monetarias explícitas
 - Botón de pánico real con url_launcher + registro de evento
-- Configurar webhook URL en Fintoc Dashboard
 
 **P2 (largo alcance):**
 - Live chat (tabla mensajes + realtime)
@@ -1840,34 +1778,12 @@ supabase functions deploy delete-account --no-verify-jwt
 
 - **No hay suite de tests automatizados** — validación predominantemente manual
 - **Fallback local de referencias** puede enmascarar problemas de RLS en QA
-- **Fintoc webhook sin probar end-to-end** — requiere cuenta Fintoc real
+- **Redirección post-pago a `turnoapp.cl`** — dominio sin publicar; el crédito funciona igual vía webhook (billetera se actualiza por realtime)
 - **CORS `*`** en todas las edge functions — revisar para producción
 
 ---
 
 ## 22. GUÍA PARA COLABORAR EN EL PROYECTO
-
-### Cómo empezar
-
-```bash
-# 1. Clonar repo
-git clone <repo-url>
-cd uniride
-
-# 2. Instalar dependencias Flutter
-cd turnoapp && flutter pub get
-
-# 3. Correr localmente
-flutter run -d chrome \
-  --dart-define=SUPABASE_URL=https://TU_PROYECTO.supabase.co \
-  --dart-define=SUPABASE_ANON_KEY=TU_ANON_KEY
-
-# 4. Aplicar migraciones DB
-cd ../supabase
-supabase login
-supabase link --project-ref TU_PROJECT_ID
-supabase db push
-```
 
 ### Dónde tocar qué
 
@@ -1923,7 +1839,7 @@ supabase db push   # Aplica solo migraciones pendientes
 | **Reserva / Booking** | Reserva de un pasajero en un turno específico |
 | **Dispatch** | Máquina de estados que controla el ciclo de vida de una reserva |
 | **Strike** | Falta registrada a un conductor (cancelación tardía, no-show) |
-| **Sandbox** | Modo de desarrollo donde los pagos son simulados (sin pasarela real) |
+| **Sandbox** | Modo de prueba de la pasarela (Fintoc test mode): pagos simulados con credenciales de test, sin mover dinero real |
 | **Edge Function** | Función serverless ejecutada en Supabase (Deno runtime) |
 | **PostgREST** | API REST automática que expone PostgreSQL |
 | **pg_net** | Extensión de PostgreSQL para hacer peticiones HTTP desde la DB |
@@ -1937,5 +1853,3 @@ supabase db push   # Aplica solo migraciones pendientes
 > **Nota final:** Este documento refleja el estado del proyecto a abril de 2026. Para el estado más actualizado, consultar el código fuente directamente y las migraciones más recientes en `supabase/migrations/`.
 
 ---
-
-*Documento generado para onboarding de colaboradores. Cualquier persona que lea este dossier debería poder comprender al 100% la arquitectura, lógica, flujos, y ubicación de cada componente de Turno.*

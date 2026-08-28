@@ -15,16 +15,21 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const ALLOWED_ORIGINS = [
+  "https://turnoapp.cl",
+  "https://www.turnoapp.cl",
+];
 
-function jsonResponse(payload: unknown, status = 200): Response {
-  return new Response(JSON.stringify(payload), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
+function corsHeadersFor(req: Request): Record<string, string> {
+  const origin = req.headers.get("Origin");
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    return {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+      "Vary": "Origin",
+    };
+  }
+  return {};
 }
 
 function logInfo(event: string, details: Record<string, unknown> = {}) {
@@ -42,8 +47,15 @@ function extractBearerToken(authHeader: string | null): string | null {
 }
 
 serve(async (req) => {
+  const cors = corsHeadersFor(req);
+  const jsonResponse = (payload: unknown, status = 200): Response =>
+    new Response(JSON.stringify(payload), {
+      status,
+      headers: { ...cors, "Content-Type": "application/json" },
+    });
+
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: cors });
   }
 
   if (req.method !== "POST") {
@@ -56,10 +68,9 @@ serve(async (req) => {
       return jsonResponse({ error: "unauthorized" }, 401);
     }
 
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? (() => { throw new Error("SUPABASE_URL is required"); })();
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? (() => { throw new Error("SUPABASE_SERVICE_ROLE_KEY is required"); })();
+    const supabaseAdmin = createClient(supabaseUrl, serviceKey);
 
     const { data: { user }, error: authErr } = await supabaseAdmin.auth.getUser(token);
     if (authErr || !user) {
@@ -75,9 +86,8 @@ serve(async (req) => {
     });
 
     // Call the delete_user_account RPC with the user's UUID explicitly.
-    // We use the service_role client (supabaseAdmin) for this call to bypass
-    // RLS. The RPC accepts p_user_id and handles the full cleanup including
-    // temporarily dropping the transactions immutability rules.
+    // Uses the service_role client (supabaseAdmin) to bypass RLS. The RPC
+    // runs as SECURITY DEFINER and handles the full cleanup of associated data.
     const { error: rpcErr } = await supabaseAdmin.rpc("delete_user_account", {
       p_user_id: user.id,
       p_reason: reason || null,

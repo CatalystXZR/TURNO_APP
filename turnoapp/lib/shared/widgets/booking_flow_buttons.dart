@@ -14,6 +14,7 @@ class BookingFlowButtons extends StatelessWidget {
   final VoidCallback? onCompleteTrip;
   final VoidCallback? onReview;
   final VoidCallback? onFavorite;
+  final VoidCallback? onReportNoShow;
   final bool isFavorite;
 
   const BookingFlowButtons({
@@ -27,6 +28,7 @@ class BookingFlowButtons extends StatelessWidget {
     this.onCompleteTrip,
     this.onReview,
     this.onFavorite,
+    this.onReportNoShow,
     this.isFavorite = false,
   });
 
@@ -79,7 +81,7 @@ class BookingFlowButtons extends StatelessWidget {
         ElevatedButton(
           onPressed: onAccept,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF178E68),
+            backgroundColor: AppTheme.success,
             foregroundColor: Colors.white,
             minimumSize: const Size(0, 40),
           ),
@@ -111,7 +113,7 @@ class BookingFlowButtons extends StatelessWidget {
             onPressed: onMarkArrived,
             icon: const Icon(Icons.place_outlined, size: 18),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF178E68),
+              backgroundColor: AppTheme.success,
               foregroundColor: Colors.white,
             ),
             label: const Text('Llegue a destino'),
@@ -120,6 +122,23 @@ class BookingFlowButtons extends StatelessWidget {
       );
     } else if (booking.isReserved &&
         booking.dispatchStatus == BookingDispatchStatus.driverArrived) {
+      if (onReportNoShow != null) {
+        actions.add(
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: onReportNoShow,
+              icon: const Icon(Icons.warning_amber_outlined, size: 16),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.warning,
+                side: const BorderSide(color: AppTheme.warning),
+                minimumSize: const Size(0, 36),
+              ),
+              label: const Text('Pasajero no llego', style: TextStyle(fontSize: 12)),
+            ),
+          ),
+        );
+      }
       actions.add(
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 4),
@@ -160,7 +179,7 @@ class BookingFlowButtons extends StatelessWidget {
             onPressed: onCompleteTrip,
             icon: const Icon(Icons.check_circle_outline, size: 18),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF178E68),
+              backgroundColor: AppTheme.success,
               foregroundColor: Colors.white,
             ),
             label: const Text('Finalizar viaje'),
@@ -194,7 +213,7 @@ class BookingFlowButtons extends StatelessWidget {
             onPressed: onFavorite,
             style: ElevatedButton.styleFrom(
               backgroundColor:
-                  isFavorite ? const Color(0xFFFF5A7A) : Colors.white,
+                  isFavorite ? AppTheme.favorite : Colors.white,
               foregroundColor: isFavorite ? Colors.white : AppTheme.primary,
             ),
             icon: Icon(

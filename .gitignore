@@ -43,6 +43,10 @@ turno/android/
 turno/linux/
 turno/macos/
 turno/windows/
+turnoapp/android/
+turnoapp/linux/
+turnoapp/macos/
+turnoapp/windows/
 
 # Pub cache & lock (keep pubspec.lock for reproducible builds)
 # turno/pubspec.lock  ← intentionally NOT ignored
@@ -98,3 +102,7 @@ key.properties
 google-services.json
 GoogleService-Info.plist
 certs/
+
+# ── Distribution & beta artifacts ──────────────────────────────
+TURNOAPP-BETA/
+TURNOAPP-BETA.zip

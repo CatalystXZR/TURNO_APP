@@ -86,8 +86,8 @@ class Ride {
       platformFee: (json['platform_fee'] as int?) ?? 190,
       driverNetAmount: (json['driver_net_amount'] as int?) ??
           ((json['seat_price'] as int?) ?? 2000),
-      seatsTotal: json['seats_total'] as int,
-      seatsAvailable: json['seats_available'] as int,
+      seatsTotal: (json['seats_total'] as int?) ?? 1,
+      seatsAvailable: (json['seats_available'] as int?) ?? 0,
       status: (json['status'] as String?) ?? 'active',
       cancelReason: json['cancel_reason'] as String?,
       cancelledAt: json['cancelled_at'] != null

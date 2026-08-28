@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../core/error_mapper.dart';
 import '../core/supabase_client.dart';
 import '../models/app_notification.dart';
 import '../models/booking.dart';
@@ -15,22 +16,27 @@ import 'service_providers.dart';
 class MyRidesState {
   final List<Booking> bookings;
   final bool loading;
+  final String? errorMessage;
   final DateTime lastFetchedAt;
 
   MyRidesState({
     this.bookings = const [],
     this.loading = true,
+    this.errorMessage,
     DateTime? lastFetchedAt,
   }) : lastFetchedAt = lastFetchedAt ?? DateTime(2000);
 
   MyRidesState copyWith({
     List<Booking>? bookings,
     bool? loading,
+    String? errorMessage,
+    bool clearError = false,
     DateTime? lastFetchedAt,
   }) {
     return MyRidesState(
       bookings: bookings ?? this.bookings,
       loading: loading ?? this.loading,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       lastFetchedAt: lastFetchedAt ?? this.lastFetchedAt,
     );
   }
@@ -140,7 +146,9 @@ class MyRidesNotifier extends StateNotifier<MyRidesState> {
   }
 
   void _subscriptionCleanup(Future<void> Function() action) {
-    action().catchError((_) {});
+    action().catchError((e) {
+      debugPrint('[Turno] MyRides: subscription cleanup failed: $e');
+    });
   }
 
   void _scheduleLazyRefresh() {
@@ -164,7 +172,7 @@ class MyRidesNotifier extends StateNotifier<MyRidesState> {
     }
     _loading = true;
     _pendingLoad = false;
-    state = state.copyWith(loading: true);
+    state = state.copyWith(loading: true, clearError: true);
     try {
       final service = _ref.read(bookingServiceProvider);
       final rows =
@@ -175,7 +183,14 @@ class MyRidesNotifier extends StateNotifier<MyRidesState> {
       state = state.copyWith(
         bookings: rows,
         loading: false,
+        clearError: true,
         lastFetchedAt: DateTime.now(),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      state = state.copyWith(
+        loading: false,
+        errorMessage: AppErrorMapper.toMessage(e),
       );
     } finally {
       _loading = false;

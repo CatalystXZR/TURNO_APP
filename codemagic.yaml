@@ -41,6 +41,7 @@ workflows:
         working_directory: turnoapp
         script: |
           flutter build ipa --release \
+            --build-number=$(git rev-list --count HEAD) \
             --dart-define=SUPABASE_URL=$SUPABASE_URL \
             --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY \
             --export-options-plist=$HOME/export_options.plist

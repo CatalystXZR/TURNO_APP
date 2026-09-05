@@ -33,15 +33,18 @@ workflows:
         working_directory: turnoapp
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files "com.uniride.turnoapp" --create
+          app-store-connect fetch-signing-files "com.uniride.turnoapp" \
+            --type IOS_APP_STORE \
+            --create
           mkdir -p "$HOME/Library/MobileDevice/Certificates"
           printf "%s" "$CM_CERTIFICATE" | base64 --decode > "$HOME/Library/MobileDevice/Certificates/distribution.p12"
           keychain add-certificates
+          xcode-project use-profiles
       - name: Build iOS IPA
         working_directory: turnoapp
         script: |
           flutter build ipa --release \
-            --build-number=$(git rev-list --count HEAD) \
+            --build-number=$PROJECT_BUILD_NUMBER \
             --dart-define=SUPABASE_URL=$SUPABASE_URL \
             --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY \
             --export-options-plist=$HOME/export_options.plist

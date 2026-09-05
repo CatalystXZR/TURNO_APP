@@ -6,6 +6,9 @@ workflows:
     environment:
       groups:
         - prod
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.uniride.turnoapp
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -29,15 +32,9 @@ workflows:
         working_directory: turnoapp
         script: flutter test
         ignore_failure: true
-      - name: Set up Apple Code Signing
+      - name: Set up code signing settings on Xcode project
         working_directory: turnoapp
-        script: |
-          keychain initialize
-          app-store-connect fetch-signing-files "com.uniride.turnoapp" \
-            --type IOS_APP_STORE \
-            --create
-          keychain add-certificates
-          xcode-project use-profiles
+        script: xcode-project use-profiles
       - name: Build iOS IPA
         working_directory: turnoapp
         script: |

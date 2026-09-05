@@ -36,8 +36,6 @@ workflows:
           app-store-connect fetch-signing-files "com.uniride.turnoapp" \
             --type IOS_APP_STORE \
             --create
-          mkdir -p "$HOME/Library/MobileDevice/Certificates"
-          printf "%s" "$CM_CERTIFICATE" | base64 --decode > "$HOME/Library/MobileDevice/Certificates/distribution.p12"
           keychain add-certificates
           xcode-project use-profiles
       - name: Build iOS IPA
